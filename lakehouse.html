@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Data Lakehouse - Agentic Real Estate Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bgMain: #f8fafc;
+            --bgPanel: #ffffff;
+            --bgSoft: #f1f5f9;
+            --textMain: #1e293b;
+            --textMuted: #64748b;
+            --borderSubtle: #e2e8f0;
+            --accentBlue: #3b82f6;
+        }
+
+        body {
+            background: var(--bgMain);
+            color: var(--textMain);
+        }
+
+        .source-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .source-item:hover {
+            background: var(--bgSoft);
+        }
+
+        .source-item.active {
+            background: #eff6ff;
+            border-left: 3px solid var(--accentBlue);
+        }
+
+        .pipeline-stage {
+            position: relative;
+            padding: 16px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid var(--borderSubtle);
+        }
+
+        .pipeline-connector {
+            position: absolute;
+            top: 50%;
+            right: -32px;
+            width: 32px;
+            height: 2px;
+            background: var(--borderSubtle);
+        }
+
+        .pipeline-connector::after {
+            content: '→';
+            position: absolute;
+            right: 0;
+            top: -8px;
+            color: var(--textMuted);
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bgSoft);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-complete {
+            background: #22c55e;
+        }
+
+        .status-running {
+            background: #3b82f6;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-pending {
+            background: #94a3b8;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--borderSubtle);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accentBlue);
+            background: #eff6ff;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden font-sans text-sm antialiased">
+    <div class="flex h-screen w-full overflow-hidden">
+        <!-- NAV RAIL -->
+        <aside class="w-14 bg-slate-900 flex flex-col items-center py-4 shrink-0">
+            <img src="logo.png" alt="DeepAuto" class="w-9 h-9 rounded-lg object-contain mb-6"
+                style="filter: invert(1) brightness(2);" />
+            <a href="index.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Dashboard">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+            </a>
+            <a href="lumina.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Lumina AI">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </a>
+            <a href="lakehouse.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 text-white mb-2"
+                title="Data Lakehouse">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                </svg>
+            </a>
+            <a href="tools.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Tool Studio">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+            </a>
+            <div class="flex-1"></div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="flex-1 flex flex-col min-w-0 h-full">
+            <!-- HEADER -->
+            <header class="h-12 border-b flex items-center justify-between px-4 shrink-0"
+                style="border-color: var(--borderSubtle); background: var(--bgPanel);">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                        </svg>
+                        <h1 class="font-semibold text-base" style="color: var(--textMain);">Agentic Data Lakehouse</h1>
+                    </div>
+                    <span class="text-xs" style="color: var(--textMuted);">Autonomous data ingestion &
+                        transformation</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-xs" style="color: var(--textMuted);">
+                        <span class="font-medium" style="color: var(--textMain);">385,285</span> records
+                        <span class="mx-2">•</span>
+                        <span class="font-medium text-green-600">98.2%</span> quality
+                    </div>
+                    <button onclick="triggerSync()"
+                        class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-white hover:bg-slate-900 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Sync All
+                    </button>
+                </div>
+            </header>
+
+            <!-- BODY -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- LEFT SIDEBAR - Data Sources -->
+                <aside class="w-72 h-full border-r flex flex-col shrink-0"
+                    style="background: var(--bgPanel); border-color: var(--borderSubtle);">
+                    <div class="p-3 border-b" style="border-color: var(--borderSubtle);">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider" style="color: var(--textMuted);">Data
+                            Sources</h3>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-2">
+                        <div id="sourceList" class="space-y-1">
+                            <!-- Sources loaded here -->
+                        </div>
+
+                        <!-- Add Source -->
+                        <div class="mt-4 p-3 border-t" style="border-color: var(--borderSubtle);">
+                            <button onclick="showAddSource()"
+                                class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-dashed hover:bg-slate-50"
+                                style="border-color: var(--borderSubtle); color: var(--textMuted);">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add Data Source
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="flex-1 flex overflow-hidden" style="background: var(--bgMain);">
+                    <div id="mainContent" class="flex-1 overflow-y-auto p-6">
+                        <!-- Default view -->
+                        <div id="overviewPanel">
+                            <!-- Overall Stats Cards -->
+                            <div class="grid grid-cols-5 gap-4 mb-6">
+                                <div class="bg-white rounded-lg border p-4" style="border-color: var(--borderSubtle);">
+                                    <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--textMuted);">
+                                        Total Records</div>
+                                    <div class="text-2xl font-bold" style="color: var(--textMain);" id="stat-records">
+                                        385,285</div>
+                                    <div class="text-xs text-green-600 mt-1">↑ 12.4% from last month</div>
+                                </div>
+                                <div class="bg-white rounded-lg border p-4" style="border-color: var(--borderSubtle);">
+                                    <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--textMuted);">
+                                        Total Files</div>
+                                    <div class="text-2xl font-bold" style="color: var(--textMain);" id="stat-files">
+                                        3,842</div>
+                                    <div class="text-xs" style="color: var(--textMuted);">28.4 GB storage</div>
+                                </div>
+                                <div class="bg-white rounded-lg border p-4" style="border-color: var(--borderSubtle);">
+                                    <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--textMuted);">
+                                        Tables Created</div>
+                                    <div class="text-2xl font-bold" style="color: var(--textMain);" id="stat-tables">22
+                                    </div>
+                                    <div class="text-xs" style="color: var(--textMuted);">42 indexes built</div>
+                                </div>
+                                <div class="bg-white rounded-lg border p-4" style="border-color: var(--borderSubtle);">
+                                    <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--textMuted);">
+                                        Queries Validated</div>
+                                    <div class="text-2xl font-bold" style="color: var(--textMain);" id="stat-queries">
+                                        110</div>
+                                    <div class="text-xs text-green-600">100% pass rate</div>
+                                </div>
+                                <div class="bg-white rounded-lg border p-4" style="border-color: var(--borderSubtle);">
+                                    <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--textMuted);">
+                                        Data Quality</div>
+                                    <div class="text-2xl font-bold text-green-600" id="stat-quality">98.2%</div>
+                                    <div class="text-xs" style="color: var(--textMuted);">Above 95% threshold</div>
+                                </div>
+                            </div>
+
+                            <!-- Pipeline Overview -->
+                            <div class="mb-6">
+                                <h2 class="text-lg font-semibold mb-4" style="color: var(--textMain);">Pipeline Overview
+                                </h2>
+                                <div id="pipelineView" class="grid grid-cols-4 gap-8">
+                                    <!-- Pipeline stages rendered here -->
+                                </div>
+                            </div>
+
+                            <!-- File Upload Zone (At Bottom) -->
+                            <div class="bg-white rounded-lg border p-6" style="border-color: var(--borderSubtle);">
+                                <div class="upload-zone max-w-xl mx-auto" ondrop="handleDrop(event)"
+                                    ondragover="event.preventDefault()">
+                                    <svg class="w-10 h-10 mx-auto mb-2" style="color: var(--textMuted);" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p class="text-sm font-medium mb-1" style="color: var(--textMain);">Drop files or
+                                        folders here to ingest</p>
+                                    <p class="text-xs mb-3" style="color: var(--textMuted);">Supports Excel, PDF, CSV,
+                                        and other document formats</p>
+                                    <button onclick="document.getElementById('fileInput').click()"
+                                        class="px-4 py-2 text-xs font-medium rounded-lg bg-slate-800 text-white hover:bg-slate-900 transition-colors">
+                                        Browse Files
+                                    </button>
+                                    <input type="file" multiple class="hidden" id="fileInput"
+                                        onchange="handleFiles(this.files)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Source Detail Panel (hidden by default) -->
+                        <div id="sourceDetail" class="hidden">
+                            <!-- Filled by loadSourceDetail -->
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDEBAR - Recent Activity -->
+                    <aside class="w-72 h-full border-l flex flex-col shrink-0"
+                        style="background: var(--bgPanel); border-color: var(--borderSubtle);">
+                        <div class="p-3 border-b" style="border-color: var(--borderSubtle);">
+                            <h3 class="text-xs font-semibold uppercase tracking-wider" style="color: var(--textMuted);">
+                                Recent Activity</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2">
+                            <div id="activityLog" class="space-y-1">
+                                <!-- Activity log here -->
+                            </div>
+                        </div>
+                    </aside>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lakehouseData = { sources: [], recentActivity: [], stats: {} };
+        let selectedSource = null;
+
+        async function loadData() {
+            try {
+                const response = await fetch('data/lakehouse.json');
+                lakehouseData = await response.json();
+                renderSources();
+                renderPipelineOverview();
+                renderActivityLog();
+            } catch (error) {
+                console.error('Error loading lakehouse data:', error);
+            }
+        }
+
+        function renderSources() {
+            const container = document.getElementById('sourceList');
+            container.innerHTML = lakehouseData.sources.map((source, idx) => {
+                const statusClass = source.status === 'connected' ? 'status-complete' : 'status-running';
+                const statusText = source.status === 'connected' ? 'Connected' : 'Syncing...';
+                const recordCount = source.records ? source.records.toLocaleString() + ' records' :
+                    source.files ? source.files.toLocaleString() + ' files' :
+                        source.emails ? source.emails.toLocaleString() + ' emails' : '';
+                return `
+                <div class="source-item" onclick="loadSourceDetail(${idx})" id="source-${idx}">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center flex-shrink-0 text-lg">
+                            ${source.icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-sm" style="color: var(--textMain);">${source.name}</span>
+                                <span class="status-dot ${statusClass}"></span>
+                            </div>
+                            <div class="text-xs mt-1" style="color: var(--textMuted);">${recordCount}</div>
+                            <div class="flex items-center gap-1 text-xs mt-1" style="color: var(--accentBlue);">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                ${source.syncFrequency || 'Manual sync'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderPipelineOverview() {
+            const stages = ['ingestion', 'cleanup', 'database', 'queryTest'];
+            const stageNames = ['Ingestion', 'Cleanup', 'Database', 'Query Test'];
+            const stageIcons = ['📥', '🧹', '🗄️', '✅'];
+
+            const totals = stages.map(stage => {
+                let total = 0, complete = 0;
+                lakehouseData.sources.forEach(s => {
+                    total++;
+                    if (s.pipeline[stage].status === 'complete') complete++;
+                });
+                return { stage, complete, total, pct: Math.round((complete / total) * 100) };
+            });
+
+            const container = document.getElementById('pipelineView');
+            container.innerHTML = totals.map((t, idx) => `
+                <div class="pipeline-stage ${idx < 3 ? 'relative' : ''}">
+                    ${idx < 3 ? '<div class="pipeline-connector"></div>' : ''}
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-2xl">${stageIcons[idx]}</div>
+                        <div>
+                            <div class="font-medium" style="color: var(--textMain);">${stageNames[idx]}</div>
+                            <div class="text-xs" style="color: var(--textMuted);">${t.complete}/${t.total} sources</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${t.pct === 100 ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${t.pct}%"></div>
+                    </div>
+                    <div class="text-xs text-right mt-1 font-medium" style="color: ${t.pct === 100 ? '#22c55e' : '#3b82f6'};">${t.pct}%</div>
+                </div>
+            `).join('');
+        }
+
+        function renderActivityLog() {
+            const container = document.getElementById('activityLog');
+            container.innerHTML = lakehouseData.recentActivity.map(a => {
+                // Icon mapping based on action type
+                let icon = '📝';
+                let statusColor = 'text-slate-600';
+
+                if (a.action.includes('Processing')) {
+                    icon = '⏳';
+                    statusColor = 'text-blue-600';
+                } else if (a.action.includes('Extracted') || a.action.includes('OCR completed')) {
+                    icon = '✅';
+                    statusColor = 'text-green-600';
+                } else if (a.action.includes('Query test')) {
+                    icon = '🔍';
+                    statusColor = 'text-purple-600';
+                } else if (a.action.includes('Synced') || a.action.includes('sync completed')) {
+                    icon = '🔄';
+                    statusColor = 'text-teal-600';
+                } else if (a.action.includes('Created') || a.action.includes('Generated')) {
+                    icon = '➕';
+                    statusColor = 'text-indigo-600';
+                } else if (a.action.includes('Validated')) {
+                    icon = '✓';
+                    statusColor = 'text-green-600';
+                }
+
+                return `
+                <div class="flex items-start gap-2 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <span class="text-sm flex-shrink-0">${icon}</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="font-medium text-xs ${statusColor} truncate">${a.source}</span>
+                            <span class="text-[10px] font-mono px-1 py-0.5 rounded bg-slate-100 flex-shrink-0" style="color: var(--textMuted);">${a.time}</span>
+                        </div>
+                        <p class="text-xs mt-0.5 line-clamp-2" style="color: var(--textMain);">${a.action}</p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function loadSourceDetail(idx) {
+            document.querySelectorAll('.source-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`source-${idx}`).classList.add('active');
+
+            const source = lakehouseData.sources[idx];
+            selectedSource = source;
+
+            document.getElementById('overviewPanel').classList.add('hidden');
+            document.getElementById('sourceDetail').classList.remove('hidden');
+
+            const stages = [
+                { key: 'ingestion', name: 'Ingestion', icon: '📥', desc: 'Pulling data from source' },
+                { key: 'cleanup', name: 'Cleanup', icon: '🧹', desc: 'Validating & transforming' },
+                { key: 'database', name: 'Database', icon: '🗄️', desc: 'Creating tables & indexes' },
+                { key: 'queryTest', name: 'Query Test', icon: '✅', desc: 'Validating with test queries' }
+            ];
+
+            let tablesHtml = '';
+            if (source.tables) {
+                tablesHtml = `
+                    <div class="mt-6">
+                        <h3 class="font-medium mb-3" style="color: var(--textMain);">Tables</h3>
+                        <div class="bg-white rounded-lg border overflow-hidden" style="border-color: var(--borderSubtle);">
+                            <table class="w-full text-sm">
+                                <thead style="background: var(--bgSoft);">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 font-medium">Table Name</th>
+                                        <th class="text-right px-4 py-2 font-medium">Records</th>
+                                        <th class="text-center px-4 py-2 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${source.tables.map(t => `
+                                        <tr class="border-t" style="border-color: var(--borderSubtle);">
+                                            <td class="px-4 py-2 font-mono text-xs">${t.name}</td>
+                                            <td class="px-4 py-2 text-right">${t.records.toLocaleString()}</td>
+                                            <td class="px-4 py-2 text-center"><span class="status-dot status-complete"></span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } else if (source.fileTypes) {
+                tablesHtml = `
+                    <div class="mt-6">
+                        <h3 class="font-medium mb-3" style="color: var(--textMain);">File Types</h3>
+                        <div class="bg-white rounded-lg border overflow-hidden" style="border-color: var(--borderSubtle);">
+                            <table class="w-full text-sm">
+                                <thead style="background: var(--bgSoft);">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 font-medium">Type</th>
+                                        <th class="text-right px-4 py-2 font-medium">Count</th>
+                                        <th class="text-right px-4 py-2 font-medium">Size</th>
+                                        <th class="text-center px-4 py-2 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${source.fileTypes.map(t => `
+                                        <tr class="border-t" style="border-color: var(--borderSubtle);">
+                                            <td class="px-4 py-2">${t.type}</td>
+                                            <td class="px-4 py-2 text-right">${t.count.toLocaleString()}</td>
+                                            <td class="px-4 py-2 text-right">${t.size}</td>
+                                            <td class="px-4 py-2 text-center"><span class="status-dot ${t.status === 'synced' ? 'status-complete' : t.status === 'processing' ? 'status-running' : 'status-pending'}"></span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('sourceDetail').innerHTML = `
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showOverview()" class="flex items-center gap-2 text-sm" style="color: var(--textMuted);">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back to Overview
+                    </button>
+                    <button onclick="syncSource('${source.id}')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border hover:bg-slate-50" style="border-color: var(--borderSubtle);">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Sync Now
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex items-center justify-center text-2xl">
+                        ${source.icon}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold" style="color: var(--textMain);">${source.name}</h2>
+                        <p class="text-sm" style="color: var(--textMuted);">${source.description}</p>
+                    </div>
+                </div>
+
+                <!-- Pipeline Stages -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    ${stages.map(s => {
+                const p = source.pipeline[s.key];
+                const statusClass = p.status === 'complete' ? 'status-complete' : p.status === 'running' ? 'status-running' : 'status-pending';
+                const bgClass = p.status === 'complete' ? 'bg-green-50 border-green-200' : p.status === 'running' ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200';
+                return `
+                            <div class="p-4 rounded-lg border ${bgClass}">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-lg">${s.icon}</span>
+                                    <span class="font-medium">${s.name}</span>
+                                    <span class="status-dot ${statusClass} ml-auto"></span>
+                                </div>
+                                <div class="text-xs mb-2" style="color: var(--textMuted);">${s.desc}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${p.status === 'complete' ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${p.progress}%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs mt-2" style="color: var(--textMuted);">
+                                    <span>${p.progress}%</span>
+                                    ${p.status === 'complete' ? '<span class="text-green-600">Complete</span>' : p.status === 'running' ? '<span class="text-blue-600">Running</span>' : '<span>Pending</span>'}
+                                </div>
+                            </div>
+                        `;
+            }).join('')}
+                </div>
+
+                ${tablesHtml}
+            `;
+        }
+
+        function showOverview() {
+            document.querySelectorAll('.source-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('overviewPanel').classList.remove('hidden');
+            document.getElementById('sourceDetail').classList.add('hidden');
+            selectedSource = null;
+        }
+
+        function showAddSource() {
+            alert('Add Data Source wizard would open here.\n\nSupported sources:\n• Property Management Systems (Yardi, RentManager, AppFolio)\n• Cloud Storage (WebDisk, Dropbox, Google Drive)\n• Email (Outlook, Gmail)\n• APIs (CoStar, REIS, Zillow)');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const names = Array.from(files).map(f => f.name).join(', ');
+                alert(`Files ready for ingestion:\n${names}\n\nThese would be added to the WebDisk source for processing.`);
+            }
+        }
+
+        function triggerSync() {
+            alert('Triggering full sync across all data sources...\n\nThis would initiate the pipeline for any pending updates.');
+        }
+
+        function syncSource(sourceId) {
+            alert(`Syncing ${sourceId}...\n\nThis would trigger a fresh sync for this specific data source.`);
+        }
+
+        document.querySelector('.upload-zone').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>

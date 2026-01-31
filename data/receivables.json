@@ -1,0 +1,372 @@
+{
+    "summary": {
+        "totalAR": 485000,
+        "total0to30": 312000,
+        "total31to60": 89000,
+        "total61to90": 48000,
+        "total91plus": 36000,
+        "collectionRate": 96.2
+    },
+    "funds": [
+        {
+            "fundId": "fund1",
+            "fundName": "Fund I",
+            "totalAR": 245000,
+            "aging0to30": 158000,
+            "aging31to60": 45000,
+            "aging61to90": 24000,
+            "aging91plus": 18000,
+            "collectionRate": 96.8,
+            "properties": 12
+        },
+        {
+            "fundId": "fund2",
+            "fundName": "Fund II",
+            "totalAR": 240000,
+            "aging0to30": 154000,
+            "aging31to60": 44000,
+            "aging61to90": 24000,
+            "aging91plus": 18000,
+            "collectionRate": 95.6,
+            "properties": 12
+        }
+    ],
+    "t12Trend": {
+        "months": [
+            "Feb-25",
+            "Mar-25",
+            "Apr-25",
+            "May-25",
+            "Jun-25",
+            "Jul-25",
+            "Aug-25",
+            "Sep-25",
+            "Oct-25",
+            "Nov-25",
+            "Dec-25",
+            "Jan-26"
+        ],
+        "aging0to30": [
+            305000,
+            298000,
+            315000,
+            310000,
+            308000,
+            318000,
+            325000,
+            320000,
+            315000,
+            310000,
+            308000,
+            312000
+        ],
+        "aging31to60": [
+            92000,
+            88000,
+            85000,
+            91000,
+            95000,
+            90000,
+            87000,
+            92000,
+            88000,
+            85000,
+            91000,
+            89000
+        ],
+        "aging61to90": [
+            52000,
+            48000,
+            45000,
+            50000,
+            54000,
+            50000,
+            47000,
+            52000,
+            48000,
+            45000,
+            50000,
+            48000
+        ],
+        "aging91plus": [
+            42000,
+            38000,
+            35000,
+            40000,
+            44000,
+            40000,
+            37000,
+            42000,
+            38000,
+            35000,
+            40000,
+            36000
+        ]
+    },
+    "propertyReceivables": {
+        "sunset": {
+            "propertyId": "sunset",
+            "propertyName": "Sunset Gardens",
+            "fundId": "fund1",
+            "totalAR": 18500,
+            "aging0to30": 12000,
+            "aging31to60": 3500,
+            "aging61to90": 1800,
+            "aging91plus": 1200,
+            "collectionRate": 97.1
+        },
+        "parkview": {
+            "propertyId": "parkview",
+            "propertyName": "Parkview Tower",
+            "fundId": "fund1",
+            "totalAR": 21200,
+            "aging0to30": 13800,
+            "aging31to60": 4000,
+            "aging61to90": 2000,
+            "aging91plus": 1400,
+            "collectionRate": 96.4
+        },
+        "residences": {
+            "propertyId": "residences",
+            "propertyName": "The Residences at Midtown",
+            "fundId": "fund1",
+            "totalAR": 28500,
+            "aging0to30": 18500,
+            "aging31to60": 5400,
+            "aging61to90": 2700,
+            "aging91plus": 1900,
+            "collectionRate": 96.8
+        },
+        "oakmont": {
+            "propertyId": "oakmont",
+            "propertyName": "Oakmont Place",
+            "fundId": "fund1",
+            "totalAR": 32100,
+            "aging0to30": 20800,
+            "aging31to60": 6100,
+            "aging61to90": 3100,
+            "aging91plus": 2100,
+            "collectionRate": 97.2
+        },
+        "maple": {
+            "propertyId": "maple",
+            "propertyName": "Maple Creek Apartments",
+            "fundId": "fund1",
+            "totalAR": 15200,
+            "aging0to30": 9900,
+            "aging31to60": 2900,
+            "aging61to90": 1500,
+            "aging91plus": 900,
+            "collectionRate": 97.5
+        },
+        "urbanloft": {
+            "propertyId": "urbanloft",
+            "propertyName": "Urban Loft Living",
+            "fundId": "fund1",
+            "totalAR": 19800,
+            "aging0to30": 12900,
+            "aging31to60": 3700,
+            "aging61to90": 1900,
+            "aging91plus": 1300,
+            "collectionRate": 96.3
+        },
+        "riverside": {
+            "propertyId": "riverside",
+            "propertyName": "Riverside Commons",
+            "fundId": "fund1",
+            "totalAR": 22500,
+            "aging0to30": 14600,
+            "aging31to60": 4200,
+            "aging61to90": 2200,
+            "aging91plus": 1500,
+            "collectionRate": 96.9
+        },
+        "summit": {
+            "propertyId": "summit",
+            "propertyName": "Summit View Terrace",
+            "fundId": "fund1",
+            "totalAR": 17800,
+            "aging0to30": 11600,
+            "aging31to60": 3400,
+            "aging61to90": 1700,
+            "aging91plus": 1100,
+            "collectionRate": 97.0
+        },
+        "willowbrook": {
+            "propertyId": "willowbrook",
+            "propertyName": "Willowbrook Village",
+            "fundId": "fund1",
+            "totalAR": 24200,
+            "aging0to30": 15700,
+            "aging31to60": 4600,
+            "aging61to90": 2300,
+            "aging91plus": 1600,
+            "collectionRate": 96.7
+        },
+        "highland": {
+            "propertyId": "highland",
+            "propertyName": "Highland Ridge",
+            "fundId": "fund1",
+            "totalAR": 16500,
+            "aging0to30": 10700,
+            "aging31to60": 3100,
+            "aging61to90": 1600,
+            "aging91plus": 1100,
+            "collectionRate": 97.3
+        },
+        "metro": {
+            "propertyId": "metro",
+            "propertyName": "Metro Gardens",
+            "fundId": "fund1",
+            "totalAR": 14200,
+            "aging0to30": 9200,
+            "aging31to60": 2700,
+            "aging61to90": 1400,
+            "aging91plus": 900,
+            "collectionRate": 97.6
+        },
+        "courtyard": {
+            "propertyId": "courtyard",
+            "propertyName": "The Courtyard",
+            "fundId": "fund1",
+            "totalAR": 14500,
+            "aging0to30": 9400,
+            "aging31to60": 2800,
+            "aging61to90": 1400,
+            "aging91plus": 900,
+            "collectionRate": 97.4
+        },
+        "greenview": {
+            "propertyId": "greenview",
+            "propertyName": "Greenview Estates",
+            "fundId": "fund2",
+            "totalAR": 19200,
+            "aging0to30": 12500,
+            "aging31to60": 3600,
+            "aging61to90": 1800,
+            "aging91plus": 1300,
+            "collectionRate": 95.8
+        },
+        "lakefront": {
+            "propertyId": "lakefront",
+            "propertyName": "Lakefront Heights",
+            "fundId": "fund2",
+            "totalAR": 26800,
+            "aging0to30": 17400,
+            "aging31to60": 5100,
+            "aging61to90": 2500,
+            "aging91plus": 1800,
+            "collectionRate": 95.2
+        },
+        "harborside": {
+            "propertyId": "harborside",
+            "propertyName": "Harborside Lofts",
+            "fundId": "fund2",
+            "totalAR": 21500,
+            "aging0to30": 14000,
+            "aging31to60": 4000,
+            "aging61to90": 2100,
+            "aging91plus": 1400,
+            "collectionRate": 95.9
+        },
+        "cedarpoint": {
+            "propertyId": "cedarpoint",
+            "propertyName": "Cedar Point Apartments",
+            "fundId": "fund2",
+            "totalAR": 17800,
+            "aging0to30": 11600,
+            "aging31to60": 3300,
+            "aging61to90": 1700,
+            "aging91plus": 1200,
+            "collectionRate": 96.1
+        },
+        "downtown": {
+            "propertyId": "downtown",
+            "propertyName": "Downtown Plaza",
+            "fundId": "fund2",
+            "totalAR": 23100,
+            "aging0to30": 15000,
+            "aging31to60": 4400,
+            "aging61to90": 2200,
+            "aging91plus": 1500,
+            "collectionRate": 95.4
+        },
+        "skyline": {
+            "propertyId": "skyline",
+            "propertyName": "Skyline Towers",
+            "fundId": "fund2",
+            "totalAR": 29500,
+            "aging0to30": 19200,
+            "aging31to60": 5500,
+            "aging61to90": 2800,
+            "aging91plus": 2000,
+            "collectionRate": 95.3
+        },
+        "garden": {
+            "propertyId": "garden",
+            "propertyName": "Garden Walk",
+            "fundId": "fund2",
+            "totalAR": 15600,
+            "aging0to30": 10100,
+            "aging31to60": 2900,
+            "aging61to90": 1500,
+            "aging91plus": 1100,
+            "collectionRate": 96.0
+        },
+        "bayview": {
+            "propertyId": "bayview",
+            "propertyName": "Bayview Residences",
+            "fundId": "fund2",
+            "totalAR": 22400,
+            "aging0to30": 14600,
+            "aging31to60": 4200,
+            "aging61to90": 2100,
+            "aging91plus": 1500,
+            "collectionRate": 95.7
+        },
+        "pinecrest": {
+            "propertyId": "pinecrest",
+            "propertyName": "Pinecrest Manor",
+            "fundId": "fund2",
+            "totalAR": 18900,
+            "aging0to30": 12300,
+            "aging31to60": 3500,
+            "aging61to90": 1800,
+            "aging91plus": 1300,
+            "collectionRate": 95.5
+        },
+        "central": {
+            "propertyId": "central",
+            "propertyName": "Central Station Lofts",
+            "fundId": "fund2",
+            "totalAR": 20100,
+            "aging0to30": 13100,
+            "aging31to60": 3700,
+            "aging61to90": 1900,
+            "aging91plus": 1400,
+            "collectionRate": 95.6
+        },
+        "valley": {
+            "propertyId": "valley",
+            "propertyName": "Valley Oaks",
+            "fundId": "fund2",
+            "totalAR": 14200,
+            "aging0to30": 9200,
+            "aging31to60": 2700,
+            "aging61to90": 1400,
+            "aging91plus": 900,
+            "collectionRate": 96.2
+        },
+        "terrace": {
+            "propertyId": "terrace",
+            "propertyName": "The Terrace",
+            "fundId": "fund2",
+            "totalAR": 10900,
+            "aging0to30": 7100,
+            "aging31to60": 2100,
+            "aging61to90": 1000,
+            "aging91plus": 700,
+            "collectionRate": 96.4
+        }
+    }
+}

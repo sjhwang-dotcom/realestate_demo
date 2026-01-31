@@ -1,0 +1,61 @@
+<!-- Shared Nav Rail Component -->
+<aside class="w-14 bg-slate-900 flex flex-col items-center py-4 shrink-0" id="navRail">
+    <div
+        class="w-8 h-8 rounded bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm mb-6">
+        MF</div>
+
+    <!-- Dashboard -->
+    <a href="index.html"
+        class="nav-item w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+        data-page="index" title="Dashboard">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+        </svg>
+    </a>
+
+    <!-- Lumina AI -->
+    <a href="lumina.html"
+        class="nav-item w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+        data-page="lumina" title="Lumina AI">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </a>
+
+    <!-- Data Lakehouse -->
+    <a href="lakehouse.html"
+        class="nav-item w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+        data-page="lakehouse" title="Data Lakehouse">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+    </a>
+
+    <!-- Tool Studio -->
+    <a href="tools.html"
+        class="nav-item w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+        data-page="tools" title="Tool Studio">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+    </a>
+
+    <div class="flex-1"></div>
+</aside>
+
+<script>
+    // Highlight active nav item based on current page
+    (function () {
+        const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.dataset.page === currentPage) {
+                item.classList.remove('text-white/60', 'hover:text-white', 'hover:bg-white/10');
+                item.classList.add('bg-white/10', 'text-white');
+            }
+        });
+    })();
+</script>

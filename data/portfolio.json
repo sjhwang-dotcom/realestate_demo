@@ -1,0 +1,58 @@
+{
+    "portfolio": {
+        "name": "Multifamily Real Estate Portfolio",
+        "totalAUM": 2800000000,
+        "totalProperties": 24,
+        "totalUnits": 11385,
+        "totalSqft": 10668996,
+        "wtdAvgOccupancy": 94.8,
+        "portfolioNOI": 166287212,
+        "avgCapRate": 5.94,
+        "avgRent": 2038,
+        "ytdReturn": 12.4,
+        "yoyNOIGrowth": 8.2,
+        "momOccupancyChange": 0.3
+    },
+    "funds": [
+        {
+            "id": "fund1",
+            "name": "DeepAuto Multifamily Fund I",
+            "vintage": 2019,
+            "totalCommitment": 500000000,
+            "calledCapital": 425000000,
+            "distributedCapital": 180000000,
+            "nav": 1450000000,
+            "grossIRR": 18.5,
+            "netIRR": 15.2,
+            "moic": 1.68,
+            "dpi": 0.42,
+            "properties": 12,
+            "units": 5892,
+            "sqft": 5520000,
+            "occupancy": 95.2,
+            "avgRent": 2085,
+            "noi": 86000000,
+            "capRate": 5.93
+        },
+        {
+            "id": "fund2",
+            "name": "DeepAuto Multifamily Fund II",
+            "vintage": 2021,
+            "totalCommitment": 750000000,
+            "calledCapital": 612000000,
+            "distributedCapital": 45000000,
+            "nav": 1350000000,
+            "grossIRR": 22.3,
+            "netIRR": 18.8,
+            "moic": 1.45,
+            "dpi": 0.07,
+            "properties": 12,
+            "units": 5493,
+            "sqft": 5148996,
+            "occupancy": 94.3,
+            "avgRent": 1987,
+            "noi": 80287212,
+            "capRate": 5.95
+        }
+    ]
+}

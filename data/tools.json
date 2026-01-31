@@ -1,0 +1,278 @@
+{
+    "codeTools": [
+        {
+            "name": "NOI Margin",
+            "description": "Net Operating Income as a percentage of total revenue",
+            "code": "function calculateNOIMargin(data) {\n  const noi = data.noi || 0;\n  const revenue = data.totalRevenue || 1;\n  return ((noi / revenue) * 100).toFixed(2) + '%';\n}",
+            "icon": "%"
+        },
+        {
+            "name": "DSCR",
+            "description": "Debt Service Coverage Ratio - measures ability to cover debt payments",
+            "code": "function calculateDSCR(data) {\n  const noi = data.noi || 0;\n  const debtService = data.monthlyDebtService * 12 || 1;\n  return (noi / debtService).toFixed(2);\n}",
+            "icon": "📊"
+        },
+        {
+            "name": "Cap Rate",
+            "description": "Capitalization rate indicating return on investment",
+            "code": "function calculateCapRate(data) {\n  const noi = data.noi || 0;\n  const propertyValue = data.propertyValue || 1;\n  return ((noi / propertyValue) * 100).toFixed(2) + '%';\n}",
+            "icon": "📈"
+        },
+        {
+            "name": "Cash-on-Cash",
+            "description": "Annual pre-tax cash flow relative to total cash invested",
+            "code": "function calculateCashOnCash(data) {\n  const cashFlow = data.noi - (data.monthlyDebtService * 12);\n  const equityInvested = data.propertyValue * 0.25;\n  return ((cashFlow / equityInvested) * 100).toFixed(2) + '%';\n}",
+            "icon": "💵"
+        },
+        {
+            "name": "Effective Occupancy",
+            "description": "Collected rent as percentage of gross potential rent",
+            "code": "function calculateEffectiveOccupancy(data) {\n  const collected = data.collectedRent || 0;\n  const potential = data.grossPotentialRent || 1;\n  return ((collected / potential) * 100).toFixed(2) + '%';\n}",
+            "icon": "🏠"
+        },
+        {
+            "name": "Levered IRR",
+            "description": "Internal Rate of Return with debt financing",
+            "code": "function calculateLeveredIRR(cashFlows) {\n  // Newton-Raphson IRR solver\n  let irr = 0.1;\n  for (let i = 0; i < 100; i++) {\n    let npv = 0, dnpv = 0;\n    cashFlows.forEach((cf, t) => {\n      npv += cf / Math.pow(1 + irr, t);\n      dnpv -= t * cf / Math.pow(1 + irr, t + 1);\n    });\n    irr -= npv / dnpv;\n  }\n  return (irr * 100).toFixed(2) + '%';\n}",
+            "icon": "📉"
+        },
+        {
+            "name": "Equity Multiple",
+            "description": "Total distributions divided by total equity invested",
+            "code": "function calculateEquityMultiple(data) {\n  const totalDistributions = data.distributions.reduce((a,b) => a+b, 0);\n  const equity = data.equityInvested || 1;\n  return (totalDistributions / equity).toFixed(2) + 'x';\n}",
+            "icon": "🔢"
+        },
+        {
+            "name": "Rent Growth YoY",
+            "description": "Year-over-year rent growth percentage",
+            "code": "function calculateRentGrowth(currentRent, priorRent) {\n  return (((currentRent - priorRent) / priorRent) * 100).toFixed(2) + '%';\n}",
+            "icon": "📶"
+        },
+        {
+            "name": "Loss-to-Lease",
+            "description": "Difference between market rent and in-place rent",
+            "code": "function calculateLossToLease(data) {\n  const loss = data.marketRent - data.inPlaceRent;\n  const pct = (loss / data.marketRent) * 100;\n  return { amount: '$' + loss.toFixed(0), percent: pct.toFixed(1) + '%' };\n}",
+            "icon": "⬇️"
+        },
+        {
+            "name": "Break-Even Occupancy",
+            "description": "Minimum occupancy to cover operating expenses and debt",
+            "code": "function calculateBreakEven(data) {\n  const totalCosts = data.opex + data.debtService;\n  const gpr = data.grossPotentialRent;\n  return ((totalCosts / gpr) * 100).toFixed(1) + '%';\n}",
+            "icon": "⚖️"
+        }
+    ],
+    "externalTools": [
+        {
+            "name": "Web Search",
+            "description": "Search the web for market data and news",
+            "detail": "Query Google, Bing, and specialized real estate sources for market reports, news articles, transaction data, and competitive intelligence.",
+            "useCase": "Research market trends. Find recent sales comps. Monitor competitor activity. Get news on specific properties or markets.",
+            "exampleInput": "Multifamily sales downtown Austin 2024",
+            "exampleOutput": "• CBRE Report: \"Austin Multifamily Q4 2024\"\n• CoStar: 320-unit complex sold for $85M (Jan 2024)\n• Apartments.com: Rent growth +2.1% YoY",
+            "status": "active",
+            "icon": "🔍"
+        },
+        {
+            "name": "Document Parser",
+            "description": "AI-powered extraction from PDFs and spreadsheets",
+            "detail": "Upload rent rolls, T-12s, operating statements, or lease abstracts. AI extracts structured data automatically.",
+            "useCase": "Parse rent rolls for unit mix analysis. Extract P&L data from operating statements. Digitize lease abstracts for DD.",
+            "exampleInput": "Upload Rent Roll PDF file",
+            "exampleOutput": "• Property: Sunset Apartments\n• Total 248 units, 94.8% occupied\n• Avg rent: $1,650/mo\n• 32 leases expiring Aug 2024",
+            "status": "active",
+            "icon": "📄"
+        },
+        {
+            "name": "CoStar API",
+            "description": "Real-time property and market data from CoStar",
+            "detail": "Access CoStar's comprehensive database of commercial real estate properties, including multifamily. Get rent comps, sales history, and market analytics.",
+            "useCase": "Pull comp set for valuations. Research submarket trends. Get building specs and ownership history.",
+            "exampleInput": "Query: Multifamily comps in Buckhead, Atlanta",
+            "exampleOutput": "• 15 properties found\n• Avg rent: $2,150/unit\n• Avg cap rate: 5.2%\n• Vacancy: 4.8%",
+            "status": "active",
+            "icon": "🏢"
+        },
+        {
+            "name": "Yardi Voyager",
+            "description": "Property management system integration",
+            "detail": "Direct integration with Yardi Voyager for real-time rent rolls, financials, and tenant data. Bi-directional sync available.",
+            "useCase": "Pull live rent rolls. Sync financial data. Export reports to Yardi.",
+            "exampleInput": "Fetch rent roll for Sunset Gardens",
+            "exampleOutput": "• 248 units synced\n• Last updated: 2 min ago\n• 6 move-outs pending\n• $412K collected MTD",
+            "status": "active",
+            "icon": "🔗"
+        },
+        {
+            "name": "RealPage Analytics",
+            "description": "Revenue management and market analytics",
+            "detail": "Connect to RealPage for AI-powered pricing recommendations, demand forecasts, and competitive positioning data.",
+            "useCase": "Optimize pricing strategy. Forecast demand. Benchmark against market.",
+            "exampleInput": "Get pricing recommendations for 2BR units",
+            "exampleOutput": "• Current: $1,850\n• Recommended: $1,925 (+4%)\n• Market avg: $1,900\n• Demand score: 85/100",
+            "status": "active",
+            "icon": "💲"
+        },
+        {
+            "name": "Argus Enterprise",
+            "description": "DCF modeling and valuation analysis",
+            "detail": "Build institutional-grade cash flow models with Argus Enterprise integration. Export to/from ARGUS format.",
+            "useCase": "Underwrite acquisitions. Create LP reporting packages. Run sensitivity analysis.",
+            "exampleInput": "5-year hold, 3% rent growth, 5.5% exit cap",
+            "exampleOutput": "• Year 5 NOI: $5.2M\n• IRR: 16.3%\n• Equity Multiple: 2.1x\n• Profit: $12.4M",
+            "status": "active",
+            "icon": "💹"
+        },
+        {
+            "name": "Zillow API",
+            "description": "Residential market data and Zestimates",
+            "detail": "Access Zillow's residential property database for comps, Zestimates, and neighborhood data. Useful for value-add opportunities.",
+            "useCase": "Research condo conversion potential. Get neighborhood demographics. Analyze single-family comps.",
+            "exampleInput": "Zestimate for 123 Main St, Dallas",
+            "exampleOutput": "• Zestimate: $485,000\n• Rent Zestimate: $2,100/mo\n• Last sale: $420K (2021)\n• YoY change: +8.2%",
+            "status": "active",
+            "icon": "🏡"
+        },
+        {
+            "name": "Census Bureau API",
+            "description": "Demographics and economic data",
+            "detail": "Access US Census Bureau data for population demographics, income levels, employment data, and housing statistics by geography.",
+            "useCase": "Analyze target demographics. Research market growth. Support investment thesis.",
+            "exampleInput": "Demographics for ZIP 75201 (Dallas)",
+            "exampleOutput": "• Population: 12,450\n• Median HHI: $92,500\n• Median age: 34\n• Renters: 68%\n• Growth 5yr: +18%",
+            "status": "active",
+            "icon": "📊"
+        },
+        {
+            "name": "Email Sender",
+            "description": "Automated email reports and notifications",
+            "detail": "Send scheduled or triggered emails with formatted reports, charts, and data. Supports templates and distribution lists.",
+            "useCase": "Weekly portfolio summary to LPs. Alert when KPI thresholds breached. DD reminders.",
+            "exampleInput": "Send weekly report to LP investors",
+            "exampleOutput": "• Recipients: 12\n• Sent: Done\n• Open rate: 75% (9 opened)",
+            "status": "active",
+            "icon": "✉️"
+        },
+        {
+            "name": "SQL Query Engine",
+            "description": "Direct database queries with natural language",
+            "detail": "Convert natural language questions to SQL and query the data lakehouse directly. Returns formatted results.",
+            "useCase": "Ad-hoc analysis. Custom reports. Data exploration.",
+            "exampleInput": "Show properties with occupancy below 90%",
+            "exampleOutput": "• 3 properties found:\n  - Oak Ridge (87.2%)\n  - River Walk (89.1%)\n  - Metro Lofts (88.5%)",
+            "status": "active",
+            "icon": "🗄️"
+        },
+        {
+            "name": "Python Executor",
+            "description": "Run Python scripts for custom analysis",
+            "detail": "Execute Python code with pandas, numpy, and scikit-learn for custom data analysis, ML models, and advanced calculations.",
+            "useCase": "Custom analytics. ML predictions. Data transformations.",
+            "exampleInput": "Predict next month occupancy",
+            "exampleOutput": "• Model: ARIMA(2,1,2)\n• Prediction: 94.7%\n• Confidence: 92%\n• Trend: Stable",
+            "status": "active",
+            "icon": "🐍"
+        },
+        {
+            "name": "Google Maps API",
+            "description": "Location intelligence and mapping",
+            "detail": "Geocoding, distance calculations, and location-based analytics. Plot properties on maps with custom markers.",
+            "useCase": "Analyze property locations. Calculate commute times. Map comp set.",
+            "exampleInput": "Distance from property to downtown",
+            "exampleOutput": "• Distance: 4.2 miles\n• Drive time: 12 min\n• Transit: 25 min\n• Walk score: 78",
+            "status": "active",
+            "icon": "🗺️"
+        }
+    ],
+    "visualizationTools": [
+        {
+            "name": "Line Chart",
+            "description": "Time-series data visualization with trend lines",
+            "detail": "Display data points connected over time. Ideal for showing trends, patterns, and changes. Supports multiple series, area fills, and annotations.",
+            "useCase": "Track KPI trends over time. Compare year-over-year performance. Identify seasonal patterns.",
+            "exampleName": "NOI Trend",
+            "exampleDescription": "Monthly Net Operating Income over 12 months with YoY comparison",
+            "icon": "📈"
+        },
+        {
+            "name": "Area Chart",
+            "description": "Stacked area visualization for cumulative trends",
+            "detail": "Show how multiple data series combine over time. Great for visualizing portfolio composition changes or cumulative metrics.",
+            "useCase": "Revenue breakdown over time. Portfolio growth by region. Expense composition trends.",
+            "exampleName": "Revenue Stack",
+            "exampleDescription": "Monthly revenue by source stacked to show total and composition",
+            "icon": "📉"
+        },
+        {
+            "name": "Heatmap",
+            "description": "Color-coded matrix showing data intensity",
+            "detail": "Display values across two dimensions using color gradients. Great for identifying patterns, outliers, and geographic distributions.",
+            "useCase": "Geographic performance analysis. Correlation matrices. Occupancy across time and regions.",
+            "exampleName": "Occupancy by Region",
+            "exampleDescription": "Portfolio-wide occupancy rates color-coded by state",
+            "icon": "🗺️"
+        },
+        {
+            "name": "Pie Chart",
+            "description": "Proportional breakdown of a whole",
+            "detail": "Show composition and relative sizes of categories. Donut variant available for center statistics. Best for 2-6 categories.",
+            "useCase": "Revenue composition. Expense breakdown. Unit mix distribution.",
+            "exampleName": "Revenue Breakdown",
+            "exampleDescription": "Income sources: Base Rent, Utilities, Parking, Other",
+            "icon": "🍩"
+        },
+        {
+            "name": "Bar Chart",
+            "description": "Compare values across categories",
+            "detail": "Display categorical data with horizontal or vertical bars. Supports grouped, stacked, and comparison modes.",
+            "useCase": "Compare properties. Budget vs actual. In-place vs market rents.",
+            "exampleName": "Rent vs Market",
+            "exampleDescription": "In-place rents compared to market rates by unit type",
+            "icon": "📊"
+        },
+        {
+            "name": "Scatter Plot",
+            "description": "Show relationships between two variables",
+            "detail": "Plot data points on X-Y axes to reveal correlations, clusters, and outliers. Bubble size can represent third dimension.",
+            "useCase": "Risk-return analysis. Property benchmarking. Cap rate vs NOI margin.",
+            "exampleName": "Portfolio Analysis",
+            "exampleDescription": "Properties plotted by Cap Rate vs NOI Margin with bubble size by AUM",
+            "icon": "⭕"
+        },
+        {
+            "name": "Gauge Chart",
+            "description": "Display single value against a target range",
+            "detail": "Show a metric's current value with color zones indicating performance (red/yellow/green). Great for dashboards and KPI monitoring.",
+            "useCase": "Occupancy targets. DSCR thresholds. Budget utilization.",
+            "exampleName": "Occupancy Gauge",
+            "exampleDescription": "Current portfolio occupancy vs target with performance zones",
+            "icon": "🎯"
+        },
+        {
+            "name": "Waterfall Chart",
+            "description": "Visualize cumulative effect of values",
+            "detail": "Show how an initial value is affected by positive and negative changes. Perfect for P&L breakdowns and variance analysis.",
+            "useCase": "NOI bridge analysis. Budget variance. Cash flow waterfall.",
+            "exampleName": "NOI Bridge",
+            "exampleDescription": "Revenue to NOI breakdown showing income and expense impacts",
+            "icon": "🌊"
+        },
+        {
+            "name": "Radar Chart",
+            "description": "Multi-dimensional comparison on radial axes",
+            "detail": "Compare entities across multiple metrics simultaneously. Each spoke represents a different dimension.",
+            "useCase": "Property scoring. Competitive analysis. Investment criteria matching.",
+            "exampleName": "Property Score",
+            "exampleDescription": "Property rated across Location, Quality, Returns, Risk, Growth",
+            "icon": "🕸️"
+        },
+        {
+            "name": "Treemap",
+            "description": "Hierarchical data as nested rectangles",
+            "detail": "Display hierarchical data where rectangle size represents value. Shows both structure and relative magnitude.",
+            "useCase": "Portfolio allocation. Expense categories. Regional revenue distribution.",
+            "exampleName": "Portfolio Allocation",
+            "exampleDescription": "Properties sized by AUM, grouped by region",
+            "icon": "🔲"
+        }
+    ]
+}

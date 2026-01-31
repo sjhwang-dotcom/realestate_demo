@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="institutional">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Studio - Agentic Real Estate Intelligence</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['IBM Plex Sans', 'sans-serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    },
+                    colors: {
+                        bgBody: '#f8fafc',
+                        bgPanel: '#ffffff',
+                        bgSoft: '#f1f5f9',
+                        borderSubtle: '#e2e8f0',
+                        textMain: '#1e293b',
+                        textMuted: '#64748b',
+                        accentBlue: '#3b82f6',
+                        accentTeal: '#14b8a6',
+                        accentRed: '#ef4444',
+                        accentGold: '#f59e0b',
+                        accentPurple: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-panel: #ffffff;
+            --bg-soft: #f1f5f9;
+            --border-subtle: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .tool-tab {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-tab:hover {
+            color: var(--text-main);
+        }
+
+        .tool-tab.active {
+            color: #1e3a5f;
+            border-bottom-color: #1e3a5f;
+        }
+
+        .tool-tab .icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-tab.active .icon {
+            background: rgba(30, 58, 95, 0.1);
+        }
+
+        .tool-item {
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .tool-item:hover {
+            background: var(--bg-soft);
+        }
+
+        .tool-item.active {
+            background: rgba(30, 58, 95, 0.06);
+            border-color: rgba(30, 58, 95, 0.2);
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.ai {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-top-left-radius: 4px;
+        }
+
+        .chat-bubble.user {
+            background: #1e3a5f;
+            color: white;
+            border-top-right-radius: 4px;
+            margin-left: auto;
+        }
+
+        .code-display {
+            position: relative;
+            background: #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .code-display pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .code-display pre code {
+            font-family: 'IBM Plex Mono', monospace !important;
+        }
+
+        .code-display .edit-overlay {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+
+        .code-display .edit-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .code-display .edit-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .code-editor {
+            font-family: 'IBM Plex Mono', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 2px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            resize: none;
+            width: 100%;
+        }
+
+        .code-editor:focus {
+            outline: none;
+        }
+
+        .suggestion-chip {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e8ecf1;
+            color: #1e3a5f;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin: 4px;
+        }
+
+        .suggestion-chip:hover {
+            background: #d1d9e6;
+        }
+
+        .confirm-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 4px;
+            border: none;
+        }
+
+        .confirm-btn.yes {
+            background: #10b981;
+            color: white;
+        }
+
+        .confirm-btn.yes:hover {
+            background: #059669;
+        }
+
+        .confirm-btn.no {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .confirm-btn.no:hover {
+            background: #e2e8f0;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-soft);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+
+        code[class*="language-"],
+        pre[class*="language-"] {
+            font-family: 'IBM Plex Mono', monospace !important;
+            font-size: 12px !important;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 600;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge.preset {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .badge.custom {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge.coming {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .param-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .param-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            font-size: 13px;
+            background: var(--bg-soft);
+        }
+
+        .param-row input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden font-sans text-sm antialiased">
+    <div class="flex h-screen w-full overflow-hidden">
+        <!-- NAV RAIL -->
+        <aside class="w-14 bg-slate-900 flex flex-col items-center py-4 shrink-0">
+            <img src="logo.png" alt="DeepAuto" class="w-9 h-9 rounded-lg object-contain mb-6"
+                style="filter: invert(1) brightness(2);" />
+            <a href="index.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Dashboard">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+            </a>
+            <a href="lumina.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Lumina AI">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </a>
+            <a href="lakehouse.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Data Lakehouse">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                </svg>
+            </a>
+            <a href="tools.html" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 text-white mb-2"
+                title="Tool Studio">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+            </a>
+            <div class="flex-1"></div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="flex-1 flex flex-col min-w-0 h-full">
+            <!-- HEADER with Tool Type Tabs -->
+            <header class="border-b border-borderSubtle bg-bgPanel shrink-0">
+                <div class="h-12 flex items-center justify-between px-4">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <svg class="h-5 w-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                            </svg>
+                            <h1 class="font-semibold text-base text-textMain">Tool Studio</h1>
+                        </div>
+                        <span class="text-xs text-textMuted">Tools used by AI</span>
+                    </div>
+                </div>
+                <!-- Tool Type Tabs -->
+                <div class="flex items-center px-4">
+                    <button onclick="setToolType('code')" id="tab-code" class="tool-tab active">
+                        <span class="icon">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                        </span>
+                        Code Tools
+                    </button>
+                    <button onclick="setToolType('visualization')" id="tab-visualization" class="tool-tab">
+                        <span class="icon">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </span>
+                        Visualization
+                    </button>
+                    <button onclick="setToolType('external')" id="tab-external" class="tool-tab">
+                        <span class="icon">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </span>
+                        Software Tools
+                    </button>
+                </div>
+            </header>
+
+            <!-- BODY -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- LEFT: Tools List -->
+                <aside class="w-72 h-full bg-bgPanel border-r border-borderSubtle flex flex-col shrink-0">
+                    <div class="p-3 border-b border-borderSubtle">
+                        <h3 class="text-xs font-semibold text-textMuted uppercase tracking-wider" id="toolListTitle">
+                            Code Tools</h3>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-2 space-y-1" id="toolList">
+                        <!-- Tools will be rendered here -->
+                    </div>
+
+                    <!-- Create New Button at bottom (only for code tools) -->
+                    <div class="p-3 border-t border-borderSubtle" id="createNewSection">
+                        <button onclick="createNewTool()"
+                            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-dashed border-borderSubtle text-textMuted hover:border-accentBlue hover:text-accentBlue transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span class="text-sm font-medium">Create New Tool</span>
+                        </button>
+                    </div>
+
+                    <!-- Request Tool Button at bottom (only for external tools) -->
+                    <div class="p-3 border-t border-borderSubtle hidden" id="requestToolSection">
+                        <button onclick="requestNewTool()"
+                            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-dashed border-borderSubtle text-textMuted hover:border-slate-600 hover:text-slate-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-sm font-medium">Request a Tool</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- MIDDLE: Chat Interface -->
+                <div class="flex-1 flex flex-col min-w-0 bg-bgBody">
+                    <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chatContainer">
+                        <!-- Welcome message rendered by JS -->
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-4 border-t border-borderSubtle bg-bgPanel" id="chatInputSection">
+                        <div class="flex gap-2">
+                            <input type="text" id="chatInput" placeholder="Describe the tool you want to create..."
+                                class="flex-1 bg-bgSoft border border-borderSubtle rounded-lg px-4 py-2.5 text-sm text-textMain focus:border-accentBlue outline-none"
+                                onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button onclick="sendMessage()"
+                                class="px-4 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resize Divider -->
+                <div class="w-1 bg-slate-200 hover:bg-accentBlue cursor-col-resize flex-shrink-0 transition-colors"
+                    id="panelResizer"></div>
+
+                <!-- RIGHT: Code View Panel -->
+                <aside class="h-full bg-slate-900 flex flex-col shrink-0" style="width: 420px;" id="codePanel">
+                    <div class="p-3 border-b border-slate-700 flex items-center justify-between" id="codePanelHeader">
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Code View</h3>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleCodeTheme()" id="themeToggle"
+                                class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-800 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" id="themeIcon" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span id="themeLabel">Light</span>
+                            </button>
+                            <button onclick="copyCode()"
+                                class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-800">Copy</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-hidden flex flex-col">
+
+
+                        <!-- Code Display -->
+                        <div class="flex-1 overflow-auto p-3" id="codeContainer">
+                            <div class="code-display" id="codeDisplay">
+                                <div class="edit-overlay">
+                                    <button class="edit-btn" onclick="toggleEditMode()">✏️ Edit</button>
+                                </div>
+                                <pre><code class="language-javascript" id="codeHighlight">// Select or create a tool to see code</code></pre>
+                            </div>
+                            <textarea id="codeEditor" class="code-editor hidden" spellcheck="false"
+                                style="height: 200px;"></textarea>
+                            <div id="editActions" class="hidden mt-2 flex gap-2">
+                                <button onclick="applyEdit()"
+                                    class="text-xs bg-accentBlue text-white px-3 py-1.5 rounded hover:bg-blue-600">Apply</button>
+                                <button onclick="cancelEdit()"
+                                    class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded hover:bg-slate-800">Cancel</button>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="p-3 border-t border-slate-700 bg-slate-800">
+                            <div class="flex items-center justify-between">
+                                <div class="text-xs text-slate-500">Test Result</div>
+                                <button onclick="runPreview()" class="text-xs text-accentBlue hover:text-blue-400">▶ Run
+                                    Test</button>
+                            </div>
+                            <div class="text-lg font-bold text-white font-mono mt-1" id="previewResult">--</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // TOOL DEFINITIONS (loaded from JSON)
+        // ============================================
+        let codeTools = [];
+        let externalTools = [];
+        let visualizationTools = [];
+
+        // Sample data for preview
+        const sampleData = {
+            totalRevenue: 180000000,
+            noi: 112000000,  // ~62% NOI margin (realistic for multifamily)
+            totalUnits: 11385,
+            propertyValue: 2800000000,
+            monthlyDebtService: 8500000,
+            collectedRent: 172000000,
+            grossPotentialRent: 195000000
+        };
+
+        // State
+        let currentToolType = 'code';
+        let savedCodeTools = JSON.parse(localStorage.getItem('savedCodeTools') || '[]');
+
+        // Load tools from JSON
+        async function loadToolsData() {
+            try {
+                const response = await fetch('data/tools.json');
+                const data = await response.json();
+
+                // Map JSON format to internal format with additional fields for code tools
+                codeTools = data.codeTools.map(t => ({
+                    name: t.name,
+                    icon: t.icon,
+                    description: t.description,
+                    detail: t.description, // Assuming description can serve as detail if not provided
+                    useCase: t.useCase || 'Calculate and analyze property metrics.', // Default use case
+                    input: t.input || 'data: object', // Default input
+                    output: t.output || 'result: string', // Default output
+                    code: t.code,
+                    preset: true
+                }));
+
+                externalTools = data.externalTools;
+                visualizationTools = data.visualizationTools;
+
+                // Initialize UI after loading
+                setToolType('code');
+            } catch (e) {
+                console.error('Failed to load tools:', e);
+                // Fallback - set empty state
+                setToolType('code');
+            }
+        }
+        let currentTool = null;
+        let currentCode = '';
+        let isEditMode = false;
+        let awaitingConfirmation = false;
+        let pendingTool = null;
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        function setToolType(type) {
+            currentToolType = type;
+
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + type).classList.add('active');
+
+            const titleMap = { code: 'Code Tools', external: 'Software Tools', visualization: 'Visualization Tools' };
+            document.getElementById('toolListTitle').textContent = titleMap[type] || 'Tools';
+            document.getElementById('createNewSection').style.display = type === 'code' ? 'block' : 'none';
+            document.getElementById('requestToolSection').style.display = type === 'external' ? 'block' : 'none';
+
+            // Show/hide code panel based on tool type
+            document.getElementById('codePanel').style.display = type === 'code' ? 'flex' : 'none';
+            document.getElementById('panelResizer').style.display = type === 'code' ? 'block' : 'none';
+
+            // Hide chat input for external/visualization tools
+            document.getElementById('chatInputSection').style.display = type === 'code' ? 'block' : 'none';
+
+            renderToolList();
+
+            // Auto-select first tool in each tab
+            if (type === 'code' && codeTools.length > 0) {
+                loadCodeTool(0, true);
+            } else if (type === 'external' && externalTools.length > 0) {
+                loadExternalTool(0);
+            } else if (type === 'visualization' && visualizationTools.length > 0) {
+                loadVisualizationTool(0);
+            } else {
+                resetChat();
+            }
+        }
+
+        // ============================================
+        // TOOL LIST
+        // ============================================
+        function renderToolList() {
+            const container = document.getElementById('toolList');
+            let html = '';
+
+            if (currentToolType === 'code') {
+                // Preset code tools
+                codeTools.forEach((t, idx) => {
+                    html += `
+                        <div class="tool-item" onclick="loadCodeTool(${idx}, true)">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 text-lg">
+                                    ${t.icon}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm text-textMain">${t.name}</div>
+                                    <div class="text-xs text-textMuted truncate">${t.description}</div>
+                                </div>
+                                <span class="badge preset">PRESET</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // User-created code tools
+                savedCodeTools.forEach((t, idx) => {
+                    html += `
+                        <div class="tool-item" onclick="loadCodeTool(${idx}, false)">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 text-lg">
+                                    ${t.icon || '⚙️'}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm text-textMain">${escapeHtml(t.name)}</div>
+                                    <div class="text-xs text-textMuted truncate">${escapeHtml(t.description || 'Custom tool')}</div>
+                                </div>
+                                <button onclick="event.stopPropagation(); deleteCodeTool(${idx})" class="text-textMuted hover:text-accentRed p-1">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else if (currentToolType === 'external') {
+                // External tools
+                externalTools.forEach((t, idx) => {
+                    const statusBadge = t.status === 'active'
+                        ? '<span class="badge active">ACTIVE</span>'
+                        : '<span class="badge coming">COMING</span>';
+
+                    html += `
+                        <div class="tool-item" onclick="loadExternalTool(${idx})">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 text-lg">
+                                    ${t.icon}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm text-textMain">${t.name}</div>
+                                    <div class="text-xs text-textMuted truncate">${t.description}</div>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else if (currentToolType === 'visualization') {
+                visualizationTools.forEach((t, idx) => {
+                    html += `
+                        <div class="tool-item" onclick="loadVisualizationTool(${idx})">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 border border-indigo-200 flex items-center justify-center flex-shrink-0 text-lg">
+                                    ${t.icon}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-sm text-textMain">${t.name}</div>
+                                    <div class="text-xs text-textMuted truncate">${t.description}</div>
+                                </div>
+                                <span class="badge preset">UNSCRIPTED</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Add request new visualization tool button
+                html += `
+                    <div class="mt-4 pt-4 border-t border-borderSubtle">
+                        <button onclick="requestNewVisualization()"
+                            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-dashed border-borderSubtle text-textMuted hover:border-accentBlue hover:text-accentBlue transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span class="text-sm font-medium">Request Chart Type</span>
+                        </button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // LOAD TOOLS
+        // ============================================
+        function loadCodeTool(idx, isPreset) {
+            const tool = isPreset ? codeTools[idx] : savedCodeTools[idx];
+            if (!tool) return;
+
+            currentTool = tool;
+            currentCode = tool.code;
+
+            const codeEl = document.getElementById('codeHighlight');
+            codeEl.textContent = tool.code;
+            Prism.highlightElement(codeEl);
+
+            // Update chat area with code tool details
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center text-xl font-bold text-slate-600">
+                        ${tool.icon}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h2 class="font-semibold text-lg text-textMain">${tool.name}</h2>
+                            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">${isPreset ? 'PRESET' : 'CUSTOM'}</span>
+                        </div>
+                        <p class="text-textMuted text-sm mb-4">${tool.description}</p>
+                        
+                        <div class="bg-white rounded-lg border border-borderSubtle p-4 space-y-4">
+                            <div>
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-2">How it works</h4>
+                                <p class="text-sm text-textMain">${tool.detail}</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-2">Use Cases</h4>
+                                <p class="text-sm text-textMain">${tool.useCase}</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-borderSubtle">
+                                <div>
+                                    <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-1">Input</h4>
+                                    <code class="text-xs bg-slate-100 px-2 py-1 rounded">${tool.input}</code>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-1">Output</h4>
+                                    <code class="text-xs bg-slate-100 px-2 py-1 rounded">${tool.output}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            runPreview();
+        }
+
+        function loadExternalTool(idx) {
+            const tool = externalTools[idx];
+            if (!tool) return;
+
+            currentTool = tool;
+
+            // Show tool details in chat area
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center text-2xl">
+                        ${tool.icon}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h2 class="font-semibold text-lg text-textMain">${tool.name}</h2>
+                            <span class="badge ${tool.status === 'active' ? 'active' : 'coming'}">${tool.status.toUpperCase()}</span>
+                        </div>
+                        <p class="text-textMuted text-sm mb-4">${tool.description}</p>
+                        
+                        <div class="bg-white rounded-lg border border-borderSubtle p-4 space-y-4">
+                            <div>
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-2">What it does</h4>
+                                <p class="text-sm text-textMain">${tool.detail}</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-2">Use Cases</h4>
+                                <p class="text-sm text-textMain">${tool.useCase}</p>
+                            </div>
+                            
+                            <!-- Example Input/Output -->
+                            <div class="pt-3 border-t border-borderSubtle">
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-3">Example</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-slate-900 rounded-lg p-3">
+                                        <div class="text-xs text-emerald-400 font-medium mb-2 flex items-center gap-1">
+                                            <span>📥</span> Input
+                                        </div>
+                                        <pre class="text-xs text-slate-300 font-mono whitespace-pre-wrap overflow-auto max-h-32">${escapeHtml(tool.exampleInput || tool.input)}</pre>
+                                    </div>
+                                    <div class="bg-slate-900 rounded-lg p-3">
+                                        <div class="text-xs text-amber-400 font-medium mb-2 flex items-center gap-1">
+                                            <span>📤</span> Output
+                                        </div>
+                                        <pre class="text-xs text-slate-300 font-mono whitespace-pre-wrap overflow-auto max-h-32">${escapeHtml(tool.exampleOutput || tool.output)}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let currentChartInstance = null;
+
+        function loadVisualizationTool(idx) {
+            const tool = visualizationTools[idx];
+            if (!tool) return;
+
+            // Destroy previous chart instance if exists
+            if (currentChartInstance) {
+                currentChartInstance.destroy();
+                currentChartInstance = null;
+            }
+
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 border border-indigo-200 flex-shrink-0 flex items-center justify-center text-2xl">
+                        ${tool.icon}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h2 class="font-semibold text-lg text-textMain">${tool.name}</h2>
+                        </div>
+                        <p class="text-textMuted text-sm mb-4">${tool.description}</p>
+                        
+                        <div class="bg-slate-50 rounded-lg border border-borderSubtle p-4 mb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider">Example: ${tool.exampleName}</h4>
+                                <span class="text-xs text-textMuted">${tool.exampleDescription}</span>
+                            </div>
+                            <div id="vizPreviewChart" class="bg-white rounded-lg p-4" style="height: 280px;">
+                                <canvas id="vizChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white rounded-lg border border-borderSubtle p-3">
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-1">How It Works</h4>
+                                <p class="text-sm text-textMain">${tool.detail}</p>
+                            </div>
+                            <div class="bg-white rounded-lg border border-borderSubtle p-3">
+                                <h4 class="font-medium text-xs text-textMuted uppercase tracking-wider mb-1">Use Cases</h4>
+                                <p class="text-sm text-textMain">${tool.useCase}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Render chart after DOM update
+            setTimeout(() => renderChart(tool.name), 50);
+        }
+
+        function renderChart(chartType) {
+            const ctx = document.getElementById('vizChart');
+            if (!ctx) return;
+
+            const chartColors = {
+                primary: 'rgba(99, 102, 241, 1)',
+                primaryLight: 'rgba(99, 102, 241, 0.2)',
+                success: 'rgba(34, 197, 94, 1)',
+                successLight: 'rgba(34, 197, 94, 0.2)',
+                warning: 'rgba(245, 158, 11, 1)',
+                slate: 'rgba(148, 163, 184, 1)'
+            };
+
+            let config = {};
+
+            if (chartType === 'Line Chart') {
+                config = {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'NOI 2024',
+                            data: [8.2, 8.5, 8.8, 9.1, 9.3, 9.6, 9.8, 10.1, 10.4, 10.7, 11.0, 11.3],
+                            borderColor: chartColors.primary,
+                            backgroundColor: chartColors.primaryLight,
+                            fill: true,
+                            tension: 0.3
+                        }, {
+                            label: 'NOI 2023',
+                            data: [7.5, 7.7, 8.0, 8.2, 8.4, 8.6, 8.8, 9.0, 9.2, 9.5, 9.7, 10.0],
+                            borderColor: chartColors.slate,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                ticks: { callback: v => '$' + v + 'M' }
+                            }
+                        }
+                    }
+                };
+            } else if (chartType === 'Pie Chart') {
+                config = {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Base Rent', 'Utility Reimb.', 'Parking', 'Pet Fees', 'Other'],
+                        datasets: [{
+                            data: [135, 27, 13.5, 2.7, 1.8],
+                            backgroundColor: [
+                                chartColors.primary,
+                                chartColors.success,
+                                chartColors.warning,
+                                'rgba(168, 85, 247, 1)',
+                                chartColors.slate
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.label + ': $' + ctx.raw + 'M'
+                                }
+                            }
+                        }
+                    }
+                };
+            } else if (chartType === 'Bar Chart') {
+                config = {
+                    type: 'bar',
+                    data: {
+                        labels: ['Studio', '1BR', '2BR', '3BR'],
+                        datasets: [{
+                            label: 'In-Place Rent',
+                            data: [1250, 1580, 2100, 2800],
+                            backgroundColor: chartColors.primary,
+                            borderRadius: 4
+                        }, {
+                            label: 'Market Rent',
+                            data: [1350, 1720, 2350, 3100],
+                            backgroundColor: chartColors.success,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: v => '$' + v.toLocaleString() }
+                            }
+                        }
+                    }
+                };
+            } else if (chartType === 'Scatter Plot') {
+                // Properties with names and fund/region for color coding
+                const properties = [
+                    { x: 4.2, y: 62, name: 'Oakwood Terrace', fund: 'Fund I', region: 'Southeast' },
+                    { x: 4.8, y: 58, name: 'Riverside Commons', fund: 'Fund I', region: 'Southwest' },
+                    { x: 5.1, y: 55, name: 'Highland Park', fund: 'Fund II', region: 'Midwest' },
+                    { x: 5.5, y: 61, name: 'Metro Gardens', fund: 'Fund II', region: 'Northeast' },
+                    { x: 5.8, y: 52, name: 'Sunset Ridge', fund: 'Fund III', region: 'Southwest' },
+                    { x: 6.2, y: 48, name: 'Lakeside Manor', fund: 'Fund III', region: 'Southeast' },
+                    { x: 4.5, y: 65, name: 'Urban Heights', fund: 'Fund I', region: 'Northeast' }
+                ];
+
+                // Color by fund
+                const fundColors = {
+                    'Fund I': 'rgba(99, 102, 241, 0.8)',    // Indigo
+                    'Fund II': 'rgba(34, 197, 94, 0.8)',   // Green
+                    'Fund III': 'rgba(245, 158, 11, 0.8)'  // Amber
+                };
+
+                config = {
+                    type: 'scatter',
+                    data: {
+                        datasets: ['Fund I', 'Fund II', 'Fund III'].map(fund => ({
+                            label: fund,
+                            data: properties.filter(p => p.fund === fund).map(p => ({ x: p.x, y: p.y, name: p.name, region: p.region })),
+                            backgroundColor: fundColors[fund],
+                            pointRadius: 10,
+                            pointHoverRadius: 12
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => [
+                                        ctx.raw.name,
+                                        `Cap Rate: ${ctx.raw.x}%`,
+                                        `NOI Margin: ${ctx.raw.y}%`,
+                                        `Region: ${ctx.raw.region}`
+                                    ]
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Cap Rate (%)' },
+                                min: 4, max: 7
+                            },
+                            y: {
+                                title: { display: true, text: 'NOI Margin (%)' },
+                                min: 45, max: 70
+                            }
+                        }
+                    }
+                };
+            } else if (chartType === 'Heatmap') {
+                // True Heatmap with color-coded grid
+                const container = document.getElementById('vizPreviewChart');
+                container.innerHTML = '';
+
+                const heatmapData = {
+                    regions: ['TX', 'AZ', 'CO', 'FL', 'NC', 'GA'],
+                    quarters: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    values: [
+                        [94.2, 95.1, 96.3, 97.2],
+                        [96.5, 97.1, 96.8, 95.9],
+                        [92.1, 93.5, 94.8, 95.2],
+                        [95.8, 96.2, 97.0, 96.5],
+                        [90.5, 91.8, 93.2, 94.1],
+                        [93.8, 94.5, 95.1, 94.7]
+                    ]
+                };
+
+                const getColor = (v) => {
+                    if (v >= 96) return 'rgb(34, 197, 94)';
+                    if (v >= 94) return 'rgb(132, 204, 22)';
+                    if (v >= 92) return 'rgb(250, 204, 21)';
+                    return 'rgb(251, 146, 60)';
+                };
+
+                let html = '<div style="padding: 16px; height: 100%;">';
+                html += '<div style="font-weight: 600; font-size: 14px; margin-bottom: 12px; color: var(--text-main);">Occupancy by Region & Quarter</div>';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th style="padding: 8px; font-size: 11px; color: var(--text-muted);"></th>';
+                heatmapData.quarters.forEach(q => {
+                    html += `<th style="padding: 8px; font-size: 11px; color: var(--text-muted); font-weight: 500;">${q}</th>`;
+                });
+                html += '</tr>';
+
+                heatmapData.regions.forEach((region, i) => {
+                    html += `<tr><td style="padding: 8px; font-size: 12px; font-weight: 500; color: var(--text-main);">${region}</td>`;
+                    heatmapData.values[i].forEach(v => {
+                        html += `<td style="padding: 4px;"><div style="background: ${getColor(v)}; color: white; padding: 10px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 600;">${v}%</div></td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+
+                // Legend
+                html += '<div style="display: flex; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--text-muted);">';
+                html += '<div style="display: flex; align-items: center; gap: 4px;"><div style="width: 16px; height: 16px; border-radius: 3px; background: rgb(34, 197, 94);"></div> ≥96%</div>';
+                html += '<div style="display: flex; align-items: center; gap: 4px;"><div style="width: 16px; height: 16px; border-radius: 3px; background: rgb(132, 204, 22);"></div> 94-96%</div>';
+                html += '<div style="display: flex; align-items: center; gap: 4px;"><div style="width: 16px; height: 16px; border-radius: 3px; background: rgb(250, 204, 21);"></div> 92-94%</div>';
+                html += '<div style="display: flex; align-items: center; gap: 4px;"><div style="width: 16px; height: 16px; border-radius: 3px; background: rgb(251, 146, 60);"></div> <92%</div>';
+                html += '</div></div>';
+
+                container.innerHTML = html;
+                return;
+            } else if (chartType === 'Area Chart') {
+                config = {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Base Rent',
+                            data: [12.5, 12.8, 13.1, 13.4, 13.6, 13.9],
+                            borderColor: chartColors.primary,
+                            backgroundColor: chartColors.primaryLight,
+                            fill: true,
+                            tension: 0.3
+                        }, {
+                            label: 'Other Income',
+                            data: [1.2, 1.3, 1.4, 1.5, 1.6, 1.7],
+                            borderColor: chartColors.success,
+                            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: { callbacks: { label: ctx => '$' + ctx.raw + 'M' } }
+                        },
+                        scales: {
+                            y: { stacked: true, ticks: { callback: v => '$' + v + 'M' } }
+                        }
+                    }
+                };
+            } else if (chartType === 'Gauge Chart') {
+                // Gauge using doughnut chart
+                config = {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Current', 'Remaining'],
+                        datasets: [{
+                            data: [95.4, 4.6],
+                            backgroundColor: [chartColors.success, chartColors.slateLight],
+                            borderWidth: 0,
+                            circumference: 180,
+                            rotation: 270
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                };
+            } else if (chartType === 'Waterfall Chart') {
+                // Waterfall using bar chart
+                config = {
+                    type: 'bar',
+                    data: {
+                        labels: ['Revenue', 'Payroll', 'Utilities', 'R&M', 'Insurance', 'NOI'],
+                        datasets: [{
+                            label: 'Amount',
+                            data: [15.2, -3.1, -1.8, -1.2, -0.9, 8.2],
+                            backgroundColor: ctx => ctx.raw >= 0 ? chartColors.success : chartColors.warning,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: ctx => '$' + Math.abs(ctx.raw) + 'M' } }
+                        },
+                        scales: {
+                            y: { ticks: { callback: v => '$' + v + 'M' } }
+                        }
+                    }
+                };
+            } else if (chartType === 'Radar Chart') {
+                config = {
+                    type: 'radar',
+                    data: {
+                        labels: ['Location', 'Quality', 'Returns', 'Risk', 'Growth'],
+                        datasets: [{
+                            label: 'Oakwood Terrace',
+                            data: [85, 72, 78, 65, 88],
+                            borderColor: chartColors.primary,
+                            backgroundColor: chartColors.primaryLight,
+                            pointBackgroundColor: chartColors.primary
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            r: { min: 0, max: 100, ticks: { stepSize: 20 } }
+                        }
+                    }
+                };
+            } else if (chartType === 'Treemap') {
+                // True Treemap with nested rectangles
+                const container = document.getElementById('vizPreviewChart');
+                container.innerHTML = '';
+
+                const treemapData = [
+                    { name: 'Southeast', value: 850, children: [{ name: 'FL', value: 320 }, { name: 'GA', value: 280 }, { name: 'NC', value: 250 }] },
+                    { name: 'Southwest', value: 620, children: [{ name: 'TX', value: 380 }, { name: 'AZ', value: 240 }] },
+                    { name: 'Northeast', value: 480, children: [{ name: 'NY', value: 280 }, { name: 'NJ', value: 200 }] },
+                    { name: 'Midwest', value: 350, children: [{ name: 'IL', value: 200 }, { name: 'OH', value: 150 }] }
+                ];
+
+                const colors = ['rgba(99, 102, 241, 0.85)', 'rgba(34, 197, 94, 0.85)', 'rgba(245, 158, 11, 0.85)', 'rgba(139, 92, 246, 0.85)'];
+                const lightColors = ['rgba(99, 102, 241, 0.5)', 'rgba(34, 197, 94, 0.5)', 'rgba(245, 158, 11, 0.5)', 'rgba(139, 92, 246, 0.5)'];
+                const total = treemapData.reduce((s, d) => s + d.value, 0);
+
+                let html = '<div style="padding: 12px; height: 100%; display: flex; flex-direction: column;">';
+                html += '<div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-main);">AUM by Region ($M)</div>';
+                html += '<div style="flex: 1; display: flex; gap: 4px; min-height: 0;">';
+
+                treemapData.forEach((region, i) => {
+                    const widthPct = (region.value / total * 100).toFixed(1);
+                    html += `<div style="width: ${widthPct}%; display: flex; flex-direction: column; gap: 3px;">`;
+                    html += `<div style="background: ${colors[i]}; color: white; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 11px; text-align: center;">${region.name}<div style="font-size: 14px; margin-top: 2px;">$${region.value}M</div></div>`;
+
+                    // Nested children
+                    const childTotal = region.children.reduce((s, c) => s + c.value, 0);
+                    html += '<div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">';
+                    region.children.forEach(child => {
+                        const childPct = (child.value / childTotal * 100).toFixed(0);
+                        html += `<div style="flex: ${child.value}; background: ${lightColors[i]}; border: 2px solid ${colors[i]}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 11px; font-weight: 500; min-height: 28px;"><span style="color: #1e293b;">${child.name}</span> <span style="margin-left: 4px; color: #64748b;">$${child.value}M</span></div>`;
+                    });
+                    html += '</div></div>';
+                });
+
+                html += '</div></div>';
+                container.innerHTML = html;
+                return;
+            }
+
+            currentChartInstance = new Chart(ctx, config);
+        }
+
+        function deleteCodeTool(idx) {
+            if (confirm('Delete this tool?')) {
+                savedCodeTools.splice(idx, 1);
+                localStorage.setItem('savedCodeTools', JSON.stringify(savedCodeTools));
+                renderToolList();
+            }
+        }
+
+        function requestNewTool() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                < div class="flex gap-4" >
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex-shrink-0 flex items-center justify-center text-xl font-bold text-slate-500">
+                        ?
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="font-semibold text-lg text-textMain mb-2">Request a New Tool</h2>
+                        <p class="text-textMuted text-sm mb-4">Need an external tool that's not listed? Describe what you need and we'll build it for you.</p>
+                        
+                        <div class="bg-white rounded-lg border border-borderSubtle p-4 space-y-4">
+                            <div>
+                                <label class="block font-medium text-xs text-textMuted uppercase tracking-wider mb-2">What tool do you need?</label>
+                                <textarea id="requestToolDesc" rows="4" placeholder="e.g., I need a tool that can pull market comparables from CoStar for underwriting..."
+                                    class="w-full bg-bgSoft border border-borderSubtle rounded-lg px-3 py-2 text-sm text-textMain focus:border-accentBlue outline-none resize-none"></textarea>
+                            </div>
+                            
+                            <button onclick="submitToolRequest()" 
+                                class="w-full py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors text-sm font-medium">
+                                Submit Request
+                            </button>
+                        </div>
+                    </div>
+                </div >
+                `;
+        }
+
+        function submitToolRequest() {
+            const desc = document.getElementById('requestToolDesc').value.trim();
+
+            if (!desc) {
+                alert('Please describe what tool you need.');
+                return;
+            }
+
+            // Show confirmation
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                < div class="flex gap-4" >
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 border border-emerald-200 flex-shrink-0 flex items-center justify-center text-2xl">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="font-semibold text-lg text-textMain mb-2">Request Submitted</h2>
+                        <p class="text-textMuted text-sm mb-4">Thank you! Our team will review your request and build the tool for you.</p>
+                        
+                        <div class="bg-emerald-50 rounded-lg border border-emerald-200 p-4">
+                            <p class="text-sm text-emerald-800">We typically respond within 2-3 business days.</p>
+                        </div>
+                    </div>
+                </div >
+                `;
+        }
+
+        function requestNewVisualization() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 flex-shrink-0 flex items-center justify-center text-xl font-bold text-slate-500">
+                        ?
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="font-semibold text-lg text-textMain mb-2">Request a New Chart Type</h2>
+                        <p class="text-textMuted text-sm mb-4">Need a visualization that's not listed? Describe what you need and we'll add it.</p>
+                        
+                        <div class="bg-white rounded-lg border border-borderSubtle p-4 space-y-4">
+                            <div>
+                                <label class="block font-medium text-xs text-textMuted uppercase tracking-wider mb-2">What chart type do you need?</label>
+                                <textarea id="requestVizDesc" rows="4" placeholder="e.g., I need a Sankey diagram to visualize cash flows between properties and funds..."
+                                    class="w-full bg-bgSoft border border-borderSubtle rounded-lg px-3 py-2 text-sm text-textMain focus:border-accentBlue outline-none resize-none"></textarea>
+                            </div>
+                            
+                            <button onclick="submitVizRequest()" 
+                                class="w-full py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                                Submit Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function submitVizRequest() {
+            const desc = document.getElementById('requestVizDesc').value.trim();
+
+            if (!desc) {
+                alert('Please describe what chart type you need.');
+                return;
+            }
+
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = `
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 border border-emerald-200 flex-shrink-0 flex items-center justify-center text-2xl">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="font-semibold text-lg text-textMain mb-2">Chart Request Submitted</h2>
+                        <p class="text-textMuted text-sm mb-4">Thank you! We'll add this visualization type soon.</p>
+                        
+                        <div class="bg-emerald-50 rounded-lg border border-emerald-200 p-4">
+                            <p class="text-sm text-emerald-800">New chart types are typically added within 1-2 weeks.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // CHAT
+        // ============================================
+        function resetChat() {
+            const container = document.getElementById('chatContainer');
+
+            if (currentToolType === 'code') {
+                container.innerHTML = `
+                < div class="flex gap-3" >
+                <div class="w-8 h-8 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="chat-bubble ai">
+                                <p class="font-medium mb-2">Create a custom code tool</p>
+                                <p class="text-textMuted text-sm mb-3">Describe what you want to calculate. I'll help you define:</p>
+                                <ul class="text-sm text-textMuted space-y-1">
+                                    <li>📥 <strong>Input:</strong> What data does it need?</li>
+                                    <li>📤 <strong>Output:</strong> What does it return?</li>
+                                    <li>⚙️ <strong>Logic:</strong> How is it calculated?</li>
+                                </ul>
+                            </div>
+                            <div class="mt-2 flex flex-wrap">
+                                <span class="suggestion-chip" onclick="sendMessage('Calculate rent per square foot')">Rent/SF</span>
+                                <span class="suggestion-chip" onclick="sendMessage('Operating expense ratio')">OpEx Ratio</span>
+                                <span class="suggestion-chip" onclick="sendMessage('Vacancy loss calculator')">Vacancy Loss</span>
+                            </div>
+                        </div>
+                    </div >
+                `;
+            } else {
+                container.innerHTML = `
+                < div class="flex gap-3" >
+                <div class="w-8 h-8 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="chat-bubble ai">
+                            <p class="font-medium mb-2">External Tool Integrations</p>
+                            <p class="text-textMuted text-sm">These are pre-built connectors to external data sources and APIs. Select a tool from the list to see its configuration.</p>
+                            <div class="mt-3 p-2 bg-emerald-50 rounded border border-emerald-200 text-emerald-700 text-xs">
+                                <strong>🌐 Web Search</strong> and <strong>📄 Document Parser</strong> are currently active and ready to use.
+                            </div>
+                        </div>
+                    </div >
+                `;
+            }
+
+            // Reset panel
+            document.getElementById('codeHighlight').textContent = '// Select or create a tool';
+            document.getElementById('previewResult').textContent = '--';
+            currentTool = null;
+            currentCode = '';
+        }
+
+        function sendMessage(text) {
+            const input = document.getElementById('chatInput');
+            const message = text || input.value.trim();
+            if (!message) return;
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                processMessage(message);
+            }, 600);
+        }
+
+        function addChatMessage(text, type, html = false) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-3' + (type === 'user' ? ' justify-end' : '');
+
+            if (type === 'ai') {
+                div.innerHTML = `
+                < div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 flex items-center justify-center" >
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    </div >
+                <div class="chat-bubble ai">${html ? text : escapeHtml(text)}</div>
+            `;
+            } else {
+                div.innerHTML = `< div class="chat-bubble user" > ${escapeHtml(text)}</div > `;
+            }
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.id = 'typingIndicator';
+            div.className = 'flex gap-3';
+            div.innerHTML = `
+                < div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 flex items-center justify-center" >
+                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div >
+                <div class="chat-bubble ai typing-indicator"><span></span><span></span><span></span></div>
+            `;
+            container.appendChild(div);
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        function processMessage(message) {
+            if (awaitingConfirmation) {
+                handleConfirmation(message);
+                return;
+            }
+
+            // Generate a tool based on the description
+            const lower = message.toLowerCase();
+
+            let toolName = '';
+            let toolInput = '';
+            let toolOutput = '';
+            let toolCode = '';
+            let toolDesc = '';
+
+            if (lower.includes('rent') && lower.includes('square foot') || lower.includes('rent/sf')) {
+                toolName = 'Rent Per SF';
+                toolDesc = 'Calculate rent per square foot';
+                toolInput = 'annualRent: number, squareFeet: number';
+                toolOutput = 'rentPerSF: string';
+                toolCode = `function calculate(data) { \n  const rentPerSF = data.annualRent / data.squareFeet; \n  return '$' + rentPerSF.toFixed(2) + '/SF'; \n } `;
+            } else if (lower.includes('opex') || lower.includes('operating expense')) {
+                toolName = 'Operating Expense Ratio';
+                toolDesc = 'OpEx as % of revenue';
+                toolInput = 'operatingExpenses: number, effectiveGrossIncome: number';
+                toolOutput = 'oer: string';
+                toolCode = `function calculate(data) { \n  const oer = (data.operatingExpenses / data.effectiveGrossIncome) * 100; \n  return oer.toFixed(1) + '%'; \n } `;
+            } else if (lower.includes('vacancy')) {
+                toolName = 'Vacancy Loss';
+                toolDesc = 'Calculate vacancy loss amount';
+                toolInput = 'grossPotentialRent: number, vacancyRate: number';
+                toolOutput = 'vacancyLoss: string';
+                toolCode = `function calculate(data) { \n  const loss = data.grossPotentialRent * (data.vacancyRate / 100); \n  return '$' + loss.toLocaleString(); \n } `;
+            } else {
+                // Generic custom tool
+                toolName = message.split(' ').slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                toolDesc = message;
+                toolInput = 'value1: number, value2: number';
+                toolOutput = 'result: number';
+                toolCode = `function calculate(data) {
+            \n  // Custom calculation for: ${message}\n  const result = data.value1 / data.value2;\n  return result.toFixed(2);\n}`;
+            }
+
+            pendingTool = { name: toolName, description: toolDesc, input: toolInput, output: toolOutput, code: toolCode };
+
+            addChatMessage(`
+                <p class="font-medium mb-2">📐 ${toolName}</p>
+                <p class="text-sm text-textMuted mb-3">${toolDesc}</p>
+                
+                <div class="p-2 rounded bg-slate-100 mb-2">
+                    <div class="text-xs text-slate-500">📥 Input</div>
+                    <code class="text-xs font-mono text-emerald-600">${toolInput}</code>
+                </div>
+                <div class="p-2 rounded bg-slate-100 mb-3">
+                    <div class="text-xs text-slate-500">📤 Output</div>
+                    <code class="text-xs font-mono text-amber-600">${toolOutput}</code>
+                </div>
+                
+                <p class="text-sm font-medium text-accentBlue">Does this look right? Want to adjust the inputs/outputs?</p>
+            `, 'ai', true);
+
+            addConfirmButtons();
+
+            // Update panel
+            const codeEl = document.getElementById('codeHighlight');
+            codeEl.textContent = toolCode;
+            Prism.highlightElement(codeEl);
+            currentCode = toolCode;
+            runPreview();
+        }
+
+        function addConfirmButtons() {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'ml-11 flex flex-wrap items-center gap-2';
+            div.id = 'confirmButtons';
+            div.innerHTML = `
+                <button class="confirm-btn yes" onclick="saveTool()">✓ Save Tool</button>
+                <button class="confirm-btn no" onclick="modifyTool()">Modify</button>
+            `;
+            container.appendChild(div);
+            awaitingConfirmation = true;
+        }
+
+        function removeConfirmButtons() {
+            const btn = document.getElementById('confirmButtons');
+            if (btn) btn.remove();
+            awaitingConfirmation = false;
+        }
+
+        function handleConfirmation(message) {
+            removeConfirmButtons();
+            const lower = message.toLowerCase();
+            if (lower.includes('yes') || lower.includes('save') || lower.includes('good')) {
+                saveTool();
+            } else {
+                modifyTool();
+            }
+        }
+
+        function saveTool() {
+            removeConfirmButtons();
+            if (!pendingTool) return;
+
+            savedCodeTools.push(pendingTool);
+            localStorage.setItem('savedCodeTools', JSON.stringify(savedCodeTools));
+            renderToolList();
+
+            addChatMessage(`
+                <p class="font-medium text-green-600">✅ ${escapeHtml(pendingTool.name)} saved!</p>
+                <p class="text-sm text-textMuted mt-1">Your tool is now available in the list.</p>
+            `, 'ai', true);
+
+            pendingTool = null;
+        }
+
+        function modifyTool() {
+            removeConfirmButtons();
+            addChatMessage(`
+                <p class="mb-2">What would you like to change?</p>
+                <ul class="text-sm text-textMuted space-y-1">
+                    <li>• "Add another input: propertySize"</li>
+                    <li>• "Change output to percentage"</li>
+                    <li>• "Use different formula"</li>
+                </ul>
+                <p class="text-sm mt-2">Or click ✏️ Edit in the code panel to modify directly.</p>
+            `, 'ai', true);
+        }
+
+        function createNewTool() {
+            resetChat();
+            document.getElementById('chatInput').focus();
+        }
+
+        // ============================================
+        // CODE PANEL
+        // ============================================
+        function toggleEditMode() {
+            const display = document.getElementById('codeDisplay');
+            const editor = document.getElementById('codeEditor');
+            const actions = document.getElementById('editActions');
+
+            if (isEditMode) {
+                display.classList.remove('hidden');
+                editor.classList.add('hidden');
+                actions.classList.add('hidden');
+                isEditMode = false;
+            } else {
+                editor.value = currentCode;
+                display.classList.add('hidden');
+                editor.classList.remove('hidden');
+                actions.classList.remove('hidden');
+                editor.focus();
+                isEditMode = true;
+            }
+        }
+
+        function applyEdit() {
+            currentCode = document.getElementById('codeEditor').value;
+            const codeEl = document.getElementById('codeHighlight');
+            codeEl.textContent = currentCode;
+            Prism.highlightElement(codeEl);
+            runPreview();
+            toggleEditMode();
+
+            if (pendingTool) {
+                pendingTool.code = currentCode;
+            }
+        }
+
+        function cancelEdit() { toggleEditMode(); }
+
+        function runPreview() {
+            try {
+                const func = new Function('data', currentCode.replace(/function \w+\(data\)\s*{/, '').replace(/}$/, ''));
+                const result = func(sampleData);
+                const display = typeof result === 'object' ? JSON.stringify(result) : result;
+                document.getElementById('previewResult').textContent = display || '--';
+                document.getElementById('previewResult').classList.remove('text-red-400');
+            } catch (e) {
+                document.getElementById('previewResult').textContent = 'Error';
+                document.getElementById('previewResult').classList.add('text-red-400');
+            }
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(currentCode);
+            alert('Copied!');
+        }
+
+        // ============================================
+        // CODE VIEW THEME TOGGLE
+        // ============================================
+        let isLightTheme = localStorage.getItem('codeTheme') === 'light';
+
+        function toggleCodeTheme() {
+            isLightTheme = !isLightTheme;
+            localStorage.setItem('codeTheme', isLightTheme ? 'light' : 'dark');
+            applyCodeTheme();
+        }
+
+        function applyCodeTheme() {
+            const panel = document.getElementById('codePanel');
+            const header = document.getElementById('codePanelHeader');
+            const themeLabel = document.getElementById('themeLabel');
+            const themeIcon = document.getElementById('themeIcon');
+            const preview = panel.querySelector('.bg-slate-800');
+
+            if (isLightTheme) {
+                // Light theme
+                panel.classList.remove('bg-slate-900');
+                panel.classList.add('bg-white');
+                header.classList.remove('border-slate-700');
+                header.classList.add('border-slate-200');
+                if (preview) {
+                    preview.classList.remove('bg-slate-800');
+                    preview.classList.add('bg-slate-100');
+                }
+                themeLabel.textContent = 'Dark';
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />';
+                // Update code display styles
+                document.querySelectorAll('.code-display pre').forEach(el => {
+                    el.style.background = '#f1f5f9';
+                    el.style.color = '#1e293b';
+                });
+            } else {
+                // Dark theme
+                panel.classList.remove('bg-white');
+                panel.classList.add('bg-slate-900');
+                header.classList.remove('border-slate-200');
+                header.classList.add('border-slate-700');
+                if (preview) {
+                    preview.classList.remove('bg-slate-100');
+                    preview.classList.add('bg-slate-800');
+                }
+                themeLabel.textContent = 'Light';
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+                // Restore dark styles
+                document.querySelectorAll('.code-display pre').forEach(el => {
+                    el.style.background = '';
+                    el.style.color = '';
+                });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadToolsData();
+
+            // Panel resizer
+            const resizer = document.getElementById('panelResizer');
+            const codePanel = document.getElementById('codePanel');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const containerRight = window.innerWidth;
+                const newWidth = containerRight - e.clientX;
+                if (newWidth >= 280 && newWidth <= 700) {
+                    codePanel.style.width = newWidth + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            });
+        });
+    </script>
+</body>
+
+</html>

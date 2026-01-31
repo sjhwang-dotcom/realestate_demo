@@ -1,0 +1,3466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="institutional">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Real Estate Intelligence</title>
+
+    <!-- Fonts: IBM Plex Sans for institutional look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['IBM Plex Sans', 'sans-serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    },
+                    colors: {
+                        bgBody: '#f8fafc',
+                        bgPanel: '#ffffff',
+                        bgSoft: '#f1f5f9',
+                        borderSubtle: '#e2e8f0',
+                        textMain: '#1e293b',
+                        textMuted: '#64748b',
+                        accentBlue: '#3b82f6',
+                        accentTeal: '#14b8a6',
+                        accentRed: '#ef4444',
+                        accentGold: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-panel: #ffffff;
+            --bg-soft: #f1f5f9;
+            --border-subtle: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .data-table {
+            font-size: 11px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 6px 10px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+        }
+
+        .data-table th:first-child,
+        .data-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .data-table thead th {
+            background: var(--bg-soft);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-soft);
+        }
+
+        .data-table .negative {
+            color: #ef4444;
+        }
+
+        .data-table .positive {
+            color: #10b981;
+        }
+
+        .data-table .indent {
+            padding-left: 20px;
+        }
+
+        .data-table .section-header {
+            font-weight: 600;
+            background: var(--bg-soft);
+        }
+
+        .data-table .total-row {
+            font-weight: 700;
+            border-top: 2px solid var(--border-subtle);
+        }
+
+        .data-table .highlight-row {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+        }
+
+        .sidebar-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-soft);
+        }
+
+        .sidebar-item.active {
+            background: var(--bg-soft);
+            border-color: var(--border-subtle);
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-main);
+        }
+
+        .nav-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .kpi-card {
+            padding: 16px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+        }
+
+        .kpi-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-soft);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden font-sans text-sm antialiased">
+    <div class="flex h-screen w-full overflow-hidden">
+        <!-- NAV RAIL -->
+        <aside class="w-14 bg-slate-900 flex flex-col items-center py-4 shrink-0">
+            <img src="logo.png" alt="DeepAuto" class="w-9 h-9 rounded-lg object-contain mb-6"
+                style="filter: invert(1) brightness(2);" />
+            <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 text-white mb-2"
+                title="Dashboard">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+            </a>
+            <a href="lumina.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Lumina AI">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </a>
+            <a href="lakehouse.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Data Lakehouse">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                </svg>
+            </a>
+            <a href="tools.html"
+                class="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 mb-2"
+                title="Tool Studio">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+            </a>
+            <div class="flex-1"></div>
+        </aside>
+
+        <!-- MAIN CONTAINER (flex to include Lumina) -->
+        <div id="main-container" class="flex-1 flex overflow-hidden">
+            <div class="flex-1 flex flex-col min-w-0 h-full">
+                <!-- HEADER -->
+                <header
+                    class="h-12 border-b border-borderSubtle bg-bgPanel flex items-center justify-between px-4 shrink-0">
+                    <div class="flex items-center gap-6">
+                        <h1 class="font-semibold text-base text-textMain">Agentic Real Estate Intelligence</h1>
+                        <nav class="flex items-center gap-1 border-l border-borderSubtle pl-6">
+                            <button onclick="setMainTab('asset')" id="tab-asset" class="nav-tab active">Asset
+                                Management</button>
+                            <button onclick="setMainTab('portfolio')" id="tab-portfolio" class="nav-tab">Portfolio
+                                Management</button>
+                        </nav>
+                    </div>
+                    <button onclick="toggleLumina()"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-700 text-white text-xs font-medium shadow-sm hover:bg-slate-800 transition-colors">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Ask Lumina
+                    </button>
+                </header>
+
+                <!-- SUB NAV -->
+                <div class="h-10 border-b border-borderSubtle bg-bgPanel flex items-center px-4">
+                    <div id="subtabs-asset" class="flex items-center gap-4">
+                        <button onclick="setSubTab('financial')" id="subtab-financial"
+                            class="text-xs font-medium text-accentBlue">Financial Statement</button>
+                        <button onclick="setSubTab('rent-roll')" id="subtab-rent-roll"
+                            class="text-xs font-medium text-textMuted hover:text-textMain">Rent Roll</button>
+                        <button onclick="setSubTab('receivables')" id="subtab-receivables"
+                            class="text-xs font-medium text-textMuted hover:text-textMain">Aged Receivables</button>
+                    </div>
+                    <div id="subtabs-portfolio" class="hidden flex items-center gap-4">
+                        <button onclick="setPortfolioSubTab('properties')" id="subtab-properties"
+                            class="text-xs font-medium text-accentBlue">Properties</button>
+                        <button onclick="setPortfolioSubTab('loans')" id="subtab-loans"
+                            class="text-xs font-medium text-textMuted hover:text-textMain">Loans</button>
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="flex flex-1 overflow-hidden">
+                    <!-- LEFT SIDEBAR (Properties) -->
+                    <aside id="propertySidebar"
+                        class="w-64 h-full bg-bgPanel border-r border-borderSubtle flex flex-col shrink-0">
+                        <div class="p-3 border-b border-borderSubtle">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-xs font-semibold text-textMuted uppercase tracking-wider">Properties
+                                </h3>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="setPropertyCategory('funds')" id="cat-funds"
+                                    class="text-xs px-2 py-1 rounded font-medium bg-slate-800 text-white">By
+                                    Funds</button>
+                                <button onclick="setPropertyCategory('region')" id="cat-region"
+                                    class="text-xs px-2 py-1 rounded font-medium text-textMuted hover:bg-bgSoft">By
+                                    Region</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="propertyList"></div>
+                    </aside>
+
+                    <!-- MAIN CONTENT -->
+                    <main class="flex-1 overflow-y-auto p-4 bg-bgBody">
+                        <!-- ASSET MANAGEMENT VIEW -->
+                        <div id="view-asset" class="view-section active">
+                            <!-- Summary Cards -->
+                            <div class="grid grid-cols-6 gap-3 mb-5" id="summaryCards"></div>
+
+                            <!-- KPI Section -->
+                            <div id="kpi-header" class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h2 class="text-sm font-semibold text-textMain">KPI</h2>
+                                    <p class="text-xs text-textMuted" id="kpi-summary">Loading...</p>
+                                </div>
+                            </div>
+                            <div id="kpi-table-wrapper" class="glass-panel overflow-hidden mb-4">
+                                <div class="overflow-x-auto">
+                                    <table class="data-table" id="kpiTable">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- RENT ROLL SECTION -->
+                            <div id="rent-roll-subsection" class="hidden">
+                                <!-- Rental KPI Cards -->
+                                <div class="grid grid-cols-6 gap-3 mb-5" id="rentalKpiCards"></div>
+
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h2 class="text-lg font-semibold text-textMain">Rental Summary</h2>
+                                        <p class="text-xs text-textMuted">Cross Segment • YoY Trend</p>
+                                    </div>
+                                </div>
+
+                                <div class="glass-panel overflow-hidden mb-6">
+                                    <div class="overflow-x-auto">
+                                        <table class="data-table" id="rentalSummaryTable">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Trend (T-12) -->
+                                <div class="glass-panel p-4">
+                                    <h3 class="font-semibold text-sm text-textMain mb-3">Trend (T-12)</h3>
+                                    <div class="flex gap-2 mb-4">
+                                        <button onclick="setRentalTrendTab('occupancy')" id="trend-tab-occupancy"
+                                            class="text-xs px-3 py-1 rounded font-medium bg-slate-800 text-white">Occupancy</button>
+                                        <button onclick="setRentalTrendTab('rentGrowth')" id="trend-tab-rentGrowth"
+                                            class="text-xs px-3 py-1 rounded font-medium text-textMuted hover:bg-bgSoft">Rent
+                                            Growth</button>
+                                        <button onclick="setRentalTrendTab('unitStatus')" id="trend-tab-unitStatus"
+                                            class="text-xs px-3 py-1 rounded font-medium text-textMuted hover:bg-bgSoft">Unit
+                                            Status</button>
+                                    </div>
+                                    <div style="height: 280px;">
+                                        <canvas id="rentalTrendChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Financial Statement Section (existing) -->
+                            <div id="financial-subsection">
+                                <!-- Revenue & Expense -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <h2 class="text-sm font-semibold text-textMain">Revenue & Expense</h2>
+                                </div>
+                                <div class="glass-panel overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="data-table" id="revenueTable">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AGED RECEIVABLES SECTION -->
+                            <div id="receivables-subsection" class="hidden">
+                                <!-- Receivables KPI Cards -->
+                                <div class="grid grid-cols-6 gap-3 mb-5" id="receivablesKpiCards"></div>
+
+                                <!-- Charts Row: AR Over Time + 31+ -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="glass-panel p-4">
+                                        <h3 class="font-semibold text-sm text-textMain mb-3">AR Over Time</h3>
+                                        <div class="flex gap-2 mb-4">
+                                            <button onclick="toggleArBucket('0to30')" id="ar-btn-0to30"
+                                                class="text-xs px-3 py-1 rounded-full border border-blue-500 text-blue-500 bg-blue-50">0-30
+                                                Days</button>
+                                            <button onclick="toggleArBucket('31to60')" id="ar-btn-31to60"
+                                                class="text-xs px-3 py-1 rounded-full border border-cyan-500 text-cyan-500 bg-cyan-50">31-60
+                                                Days</button>
+                                            <button onclick="toggleArBucket('61to90')" id="ar-btn-61to90"
+                                                class="text-xs px-3 py-1 rounded-full border border-orange-500 text-orange-500 bg-orange-50">61-90
+                                                Days</button>
+                                            <button onclick="toggleArBucket('91plus')" id="ar-btn-91plus"
+                                                class="text-xs px-3 py-1 rounded-full border border-purple-500 text-purple-500 bg-purple-50">91+
+                                                Days</button>
+                                        </div>
+                                        <div style="height: 280px;">
+                                            <canvas id="arOverTimeChart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="glass-panel p-4">
+                                        <h3 class="font-semibold text-sm text-textMain mb-3">31+</h3>
+                                        <div style="height: 320px;">
+                                            <canvas id="ar31PlusChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Receivables by Fund Table -->
+                                <div class="glass-panel overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="data-table" id="receivablesFundTable">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PORTFOLIO VIEW -->
+                        <div id="view-portfolio" class="view-section">
+                            <!-- Portfolio Header with Fund Filter -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-4">
+                                    <h2 class="text-lg font-bold text-textMain">Portfolio Overview</h2>
+                                    <div class="flex items-center gap-1" id="portfolioFundFilter">
+                                        <button onclick="setPortfolioFund('all')" id="pf-all"
+                                            class="text-xs px-3 py-1.5 rounded-full font-medium bg-slate-800 text-white">All
+                                            Funds</button>
+                                        <button onclick="setPortfolioFund('fund1')" id="pf-fund1"
+                                            class="text-xs px-3 py-1.5 rounded-full font-medium text-textMuted hover:bg-bgSoft">Fund
+                                            I</button>
+                                        <button onclick="setPortfolioFund('fund2')" id="pf-fund2"
+                                            class="text-xs px-3 py-1.5 rounded-full font-medium text-textMuted hover:bg-bgSoft">Fund
+                                            II</button>
+                                    </div>
+                                </div>
+                                <button
+                                    class="flex items-center gap-2 px-3 py-1.5 bg-accentBlue text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Print Full Report
+                                </button>
+                            </div>
+
+                            <!-- Summary Stats Bar -->
+                            <div class="grid grid-cols-4 gap-3 mb-5" id="portfolioSummaryCards">
+                                <div class="kpi-card">
+                                    <div class="kpi-label">Total Properties</div>
+                                    <div class="kpi-value text-textMain" id="pf-totalProperties">24</div>
+                                    <div class="text-xs text-textMuted mt-1">Across <span id="pf-fundCount">2</span>
+                                        Funds
+                                    </div>
+                                </div>
+                                <div class="kpi-card">
+                                    <div class="kpi-label">Total Units</div>
+                                    <div class="kpi-value text-textMain" id="pf-totalUnits">11,385</div>
+                                    <div class="text-xs text-accentTeal mt-1" id="pf-unitsChange">+312 YTD</div>
+                                </div>
+                                <div class="kpi-card">
+                                    <div class="kpi-label">Total Value</div>
+                                    <div class="kpi-value text-textMain" id="pf-totalValue">$3.2B</div>
+                                    <div class="text-xs text-accentTeal mt-1" id="pf-valueChange">+8.5% YoY</div>
+                                </div>
+                                <div class="kpi-card">
+                                    <div class="kpi-label">Avg Occupancy</div>
+                                    <div class="kpi-value text-textMain" id="pf-avgOccupancy">95.5%</div>
+                                    <div class="text-xs text-accentTeal mt-1" id="pf-occupancyChange">+0.3pp MoM</div>
+                                </div>
+                            </div>
+
+                            <!-- Charts Row: Fund Bar + Donut -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <!-- Fund Bar Chart -->
+                                <div class="glass-panel p-4">
+                                    <h3 class="font-semibold text-sm text-textMain mb-3">Fund</h3>
+                                    <div style="height: 280px;">
+                                        <canvas id="fundBarChart"></canvas>
+                                    </div>
+                                </div>
+                                <!-- Property Distribution Donut -->
+                                <div class="glass-panel p-4">
+                                    <h3 class="font-semibold text-sm text-textMain mb-3">Property Distribution</h3>
+                                    <div style="height: 280px;">
+                                        <canvas id="propertyDonutChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Funds by Region Stacked Bar Chart -->
+                            <div class="glass-panel p-4 mb-6">
+                                <h3 class="font-semibold text-sm text-textMain mb-3">Funds by Region</h3>
+                                <div style="height: 280px;">
+                                    <canvas id="regionBarChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Fund Comparison Section (hidden when individual fund is selected) -->
+                            <div id="fundComparisonSection">
+                                <!-- Q4 YoY Value Change Section -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-1">Q4 YoY Value Change</h3>
+                                    <p class="text-xs text-textMuted mb-4">Total Value Change: <span
+                                            class="font-semibold text-textMain">$704.7M</span> | Total Value Change (%):
+                                        <span class="font-semibold text-accentTeal">28.67%</span>
+                                    </p>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- YoY by Fund -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Fund</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="yoyFundChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!-- YoY by Region -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Region</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="yoyRegionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Gross IRR Section -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-4">Gross IRR (Realized vs.
+                                        Unrealized)
+                                    </h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- IRR by Fund -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Fund</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="irrFundChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!-- IRR by Region -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Region</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="irrRegionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Total Return Section -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-1">Total Return</h3>
+                                    <p class="text-xs text-textMuted mb-4">Total Return ($1.71B) = Quarterly
+                                        Distributions
+                                        ($343M) + Net Proceeds from Refi or Sale ($226M) + NAV ($1.16B)</p>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <!-- Total Return by Fund -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Fund</h4>
+                                            <div style="height: 280px;">
+                                                <canvas id="returnFundChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!-- Total Return by Region -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">By Region</h4>
+                                            <div style="height: 280px;">
+                                                <canvas id="returnRegionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Distribution Source Donut Charts -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-4">Funds by Distribution Source</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-2">Fund I</h4>
+                                            <div style="height: 180px;">
+                                                <canvas id="distFund1Chart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-2">Fund II</h4>
+                                            <div style="height: 180px;">
+                                                <canvas id="distFund2Chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Property Analytics Section (uses real property data) -->
+                            <div id="propertyAnalyticsSection">
+                                <!-- Property NOI Performance -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-1">Property NOI Performance</h3>
+                                    <p class="text-xs text-textMuted mb-4">Top 10 properties by Net Operating Income</p>
+                                    <div class="glass-panel p-4">
+                                        <div style="height: 300px;">
+                                            <canvas id="propertyNoiChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Risk Metrics -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-4">Risk Metrics by Property</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- Bad Debt Analysis -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">Bad Debt %</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="badDebtChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!-- Turnover Rate -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">Turnover Rate %</h4>
+                                            <div style="height: 260px;">
+                                                <canvas id="turnoverChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Occupancy Analysis -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-4">Occupancy Analysis</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- Physical vs Economic Occupancy -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">Physical vs Economic
+                                                Occupancy</h4>
+                                            <div style="height: 280px;">
+                                                <canvas id="occupancyCompareChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!-- Loss to Lease -->
+                                        <div class="glass-panel p-4">
+                                            <h4 class="font-semibold text-sm text-textMain mb-3">Loss to Lease %</h4>
+                                            <div style="height: 280px;">
+                                                <canvas id="lossToLeaseChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Cap Rate vs LTV Scatter -->
+                                <div class="mb-6">
+                                    <h3 class="text-base font-bold text-textMain mb-1">Risk/Return Analysis</h3>
+                                    <p class="text-xs text-textMuted mb-4">Cap Rate vs LTV by Property (bubble size =
+                                        Units)
+                                    </p>
+                                    <div class="glass-panel p-4">
+                                        <div style="height: 320px;">
+                                            <canvas id="capRateLtvChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Property Table -->
+                            <h2 class="text-sm font-semibold text-textMain mb-3">Property Comparison</h2>
+                            <div class="glass-panel overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="data-table" id="propertyTable">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- LOANS SUBSECTION (hidden by default) -->
+                            <div id="loansSubsection" class="hidden">
+                                <!-- Breadcrumb for Loans -->
+                                <div class="flex items-center justify-between mb-4">
+                                    <nav class="flex items-center text-xs text-textMuted">
+                                        <span>Portfolio Management</span>
+                                        <svg class="w-3 h-3 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7" />
+                                        </svg>
+                                        <span class="text-textMain font-medium">Loans</span>
+                                    </nav>
+                                    <button
+                                        class="flex items-center gap-2 px-3 py-1.5 bg-accentBlue text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Print Full Report
+                                    </button>
+                                </div>
+
+                                <!-- Loan Balance Header -->
+                                <div class="mb-4">
+                                    <h2 class="text-xl font-bold text-textMain flex items-center gap-2">
+                                        Loan Balance
+                                        <svg class="w-4 h-4 text-textMuted" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </h2>
+                                    <p class="text-xs text-textMuted">Loan Balance: <span
+                                            class="font-semibold text-textMain"
+                                            id="totalLoanBalanceDisplay">$1,917,339,199</span></p>
+                                </div>
+
+                                <!-- Loan KPI Summary -->
+                                <div class="grid grid-cols-6 gap-3 mb-5" id="loanKpis"></div>
+
+                                <!-- Loan Charts Row -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <!-- Loan Balance Bar Chart -->
+                                    <div class="glass-panel p-4">
+                                        <h3 class="font-semibold text-sm text-textMain mb-3">Loan Balance by Fund</h3>
+                                        <div style="height: 280px;">
+                                            <canvas id="loanBalanceChart"></canvas>
+                                        </div>
+                                    </div>
+                                    <!-- Loan Distribution Donut -->
+                                    <div class="glass-panel p-4">
+                                        <h3 class="font-semibold text-sm text-textMain mb-3">Loan Distribution by
+                                            Property
+                                        </h3>
+                                        <div style="height: 280px;">
+                                            <canvas id="loanDonutChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Maturity Schedule Chart -->
+                                <div class="glass-panel p-4 mb-6">
+                                    <h3 class="font-semibold text-sm text-textMain mb-3">Loan Maturity Schedule</h3>
+                                    <div style="height: 250px;">
+                                        <canvas id="maturityChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Loan Detail Table -->
+                                <h2 class="text-sm font-semibold text-textMain mb-3">Loan Details</h2>
+                                <div class="glass-panel overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="data-table" id="loanTable">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PROPERTY DETAIL VIEW -->
+                        <div id="view-property" class="view-section">
+                            <div id="propertyDetailContent"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- LUMINA PANEL -->
+            <div id="lumina-panel"
+                class="hidden w-[380px] h-full bg-bgPanel border-l border-borderSubtle shadow-xl flex-col shrink-0">
+                <div class="p-4 border-b border-borderSubtle flex justify-between items-center bg-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm text-white">Lumina AI</h3>
+                            <div class="flex items-center gap-1.5"><span
+                                    class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span
+                                    class="text-xs text-white/80">Online</span></div>
+                        </div>
+                    </div>
+                    <button onclick="toggleLumina()" class="text-white/80 hover:text-white">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Context Indicator -->
+                <div class="px-4 py-2 bg-slate-50 border-b border-borderSubtle flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span id="lumina-context" class="text-xs text-slate-600 font-medium">Viewing: Asset Management →
+                        Financial Statement</span>
+                </div>
+                <div id="chatHistory" class="flex-1 overflow-y-auto p-4 space-y-4 bg-bgBody">
+                    <!-- Pre-generated Multi-turn Conversation -->
+                    <!-- Turn 1: AI Welcome -->
+                    <div class="flex gap-3">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">
+                            LA</div>
+                        <div
+                            class="bg-bgPanel border border-borderSubtle p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%]">
+                            <p class="text-sm text-textMain">I see you're viewing <b>Asset Management → Financial
+                                    Statement</b>. I have access to your full portfolio data.</p>
+                            <p class="text-xs text-textMuted mt-2">24 properties across Fund I & Fund II • 9,885 total
+                                units
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Turn 2: User Question -->
+                    <div class="flex gap-3 flex-row-reverse">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-xs text-slate-600 font-bold">
+                            U</div>
+                        <div class="bg-slate-700 text-white p-3 rounded-xl rounded-tr-none shadow-sm max-w-[85%]">
+                            <p class="text-sm">Which properties have the highest bad debt?</p>
+                        </div>
+                    </div>
+                    <!-- Turn 3: AI Response with Data -->
+                    <div class="flex gap-3">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">
+                            LA</div>
+                        <div
+                            class="bg-bgPanel border border-borderSubtle p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%]">
+                            <p class="text-sm text-textMain">Based on current T-12 data, here are the top 3:</p>
+                            <div class="mt-2 space-y-1.5">
+                                <div class="flex justify-between text-xs"><span class="text-textMuted">1. Metro Lofts
+                                        (Fund
+                                        II)</span><span class="text-red-500 font-medium">4.2%</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-textMuted">2. River Walk
+                                        (Fund
+                                        I)</span><span class="text-red-500 font-medium">3.8%</span></div>
+                                <div class="flex justify-between text-xs"><span class="text-textMuted">3. Oak Ridge
+                                        (Fund
+                                        II)</span><span class="text-amber-500 font-medium">2.9%</span></div>
+                            </div>
+                            <p class="text-xs text-textMuted mt-2">Portfolio avg: 1.4% | Would you like me to analyze
+                                the
+                                trends?</p>
+                        </div>
+                    </div>
+                    <!-- Turn 4: User Follow-up -->
+                    <div class="flex gap-3 flex-row-reverse">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-xs text-slate-600 font-bold">
+                            U</div>
+                        <div class="bg-slate-700 text-white p-3 rounded-xl rounded-tr-none shadow-sm max-w-[85%]">
+                            <p class="text-sm">Yes, show me the trend for Metro Lofts</p>
+                        </div>
+                    </div>
+                    <!-- Turn 5: AI Detailed Analysis -->
+                    <div class="flex gap-3">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">
+                            LA</div>
+                        <div
+                            class="bg-bgPanel border border-borderSubtle p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%]">
+                            <p class="text-sm text-textMain"><b>Metro Lofts</b> bad debt trend (T-12):</p>
+                            <div class="mt-2 bg-slate-50 rounded-lg p-2">
+                                <div class="flex items-end justify-between h-12 gap-0.5">
+                                    <div class="w-2 bg-emerald-400 rounded-t" style="height: 20%"></div>
+                                    <div class="w-2 bg-emerald-400 rounded-t" style="height: 25%"></div>
+                                    <div class="w-2 bg-emerald-400 rounded-t" style="height: 22%"></div>
+                                    <div class="w-2 bg-amber-400 rounded-t" style="height: 35%"></div>
+                                    <div class="w-2 bg-amber-400 rounded-t" style="height: 45%"></div>
+                                    <div class="w-2 bg-amber-400 rounded-t" style="height: 50%"></div>
+                                    <div class="w-2 bg-red-400 rounded-t" style="height: 65%"></div>
+                                    <div class="w-2 bg-red-400 rounded-t" style="height: 70%"></div>
+                                    <div class="w-2 bg-red-400 rounded-t" style="height: 80%"></div>
+                                    <div class="w-2 bg-red-400 rounded-t" style="height: 85%"></div>
+                                    <div class="w-2 bg-red-500 rounded-t" style="height: 95%"></div>
+                                    <div class="w-2 bg-red-500 rounded-t" style="height: 100%"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] text-textMuted mt-1">
+                                    <span>Jan</span><span>Jun</span><span>Dec</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-textMuted mt-2">⚠️ Trend: Rising steadily since Q2. Recommend
+                                reviewing
+                                tenant screening criteria.</p>
+                        </div>
+                    </div>
+                    <!-- Turn 6: User Action Request -->
+                    <div class="flex gap-3 flex-row-reverse">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-xs text-slate-600 font-bold">
+                            U</div>
+                        <div class="bg-slate-700 text-white p-3 rounded-xl rounded-tr-none shadow-sm max-w-[85%]">
+                            <p class="text-sm">Compare Fund I vs Fund II overall performance</p>
+                        </div>
+                    </div>
+                    <!-- Turn 7: AI Comparison -->
+                    <div class="flex gap-3">
+                        <div
+                            class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">
+                            LA</div>
+                        <div
+                            class="bg-bgPanel border border-borderSubtle p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%]">
+                            <p class="text-sm text-textMain font-medium">Fund Comparison Summary:</p>
+                            <table class="w-full mt-2 text-xs">
+                                <thead>
+                                    <tr class="text-textMuted">
+                                        <th class="text-left font-medium pb-1">Metric</th>
+                                        <th class="text-right font-medium pb-1">Fund I</th>
+                                        <th class="text-right font-medium pb-1">Fund II</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-textMain">
+                                    <tr>
+                                        <td class="py-0.5">Occupancy</td>
+                                        <td class="text-right">94.8%</td>
+                                        <td class="text-right">93.2%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-0.5">Avg Rent</td>
+                                        <td class="text-right">$1,842</td>
+                                        <td class="text-right">$1,756</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-0.5">NOI Margin</td>
+                                        <td class="text-right">62.1%</td>
+                                        <td class="text-right">58.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-0.5">Bad Debt</td>
+                                        <td class="text-right text-emerald-600">1.1%</td>
+                                        <td class="text-right text-amber-600">1.8%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="text-xs text-textMuted mt-2">Fund I outperforms across all key metrics. Fund II
+                                has
+                                higher value-add potential.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 border-t border-borderSubtle bg-bgPanel">
+                    <div class="relative">
+                        <input type="text" id="chatInput" placeholder="Ask about current view..."
+                            class="w-full bg-bgSoft border border-borderSubtle rounded-lg pl-4 pr-10 py-2.5 text-sm text-textMain focus:border-slate-500 outline-none"
+                            onkeypress="if(event.key==='Enter') sendChat()">
+                        <button onclick="sendChat()"
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9-2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- end main-container -->
+
+        <script>
+            // ============================================
+            // DATA STORE
+            // ============================================
+            let portfolioData = null;
+            let propertiesData = null;
+            let monthlyData = null;
+            let loansData = null;
+            let selectedPropertyId = 'all';
+            let currentMainTab = 'asset';
+            let currentPortfolioSubTab = 'properties';
+            let propertyCategory = 'funds'; // 'funds' or 'region'
+
+            // ============================================
+            // DATA LOADING
+            // ============================================
+            async function loadData() {
+                try {
+                    const [portfolioRes, propertiesRes, monthlyRes, loansRes] = await Promise.all([
+                        fetch('data/portfolio.json'),
+                        fetch('data/properties.json'),
+                        fetch('data/monthly.json'),
+                        fetch('data/loans.json')
+                    ]);
+                    portfolioData = await portfolioRes.json();
+                    propertiesData = await propertiesRes.json();
+                    monthlyData = await monthlyRes.json();
+                    loansData = await loansRes.json();
+
+                    initializeUI();
+                } catch (e) {
+                    console.error('Failed to load data:', e);
+                    document.querySelector('main').innerHTML = '<div class="p-8 text-center text-red-500">Failed to load data. Make sure JSON files exist in /data folder.</div>';
+                }
+            }
+
+            function initializeUI() {
+                renderPropertyList();
+                renderSummaryCards();
+                renderKPITable();
+                renderRevenueTable();
+                renderPortfolioView();
+                updateKPISummary();
+            }
+
+            // ============================================
+            // PROPERTY SIDEBAR
+            // ============================================
+            function setPropertyCategory(category) {
+                propertyCategory = category;
+                document.getElementById('cat-funds').className = category === 'funds'
+                    ? 'text-xs px-2 py-1 rounded font-medium bg-slate-800 text-white'
+                    : 'text-xs px-2 py-1 rounded font-medium text-textMuted hover:bg-bgSoft';
+                document.getElementById('cat-region').className = category === 'region'
+                    ? 'text-xs px-2 py-1 rounded font-medium bg-slate-800 text-white'
+                    : 'text-xs px-2 py-1 rounded font-medium text-textMuted hover:bg-bgSoft';
+                renderPropertyList();
+            }
+
+            function renderPropertyList() {
+                const container = document.getElementById('propertyList');
+                container.innerHTML = '';
+
+                // All Properties
+                const allDiv = createPropertyItem('all', 'All Properties', `${portfolioData.portfolio.totalUnits.toLocaleString()} units • ${portfolioData.portfolio.wtdAvgOccupancy}% occ`, selectedPropertyId === 'all');
+                container.appendChild(allDiv);
+
+                if (propertyCategory === 'funds') {
+                    // Group by fund
+                    portfolioData.funds.forEach(fund => {
+                        const fundHeader = document.createElement('div');
+                        fundHeader.className = 'mt-3 mb-1 px-3 py-2 cursor-pointer hover:bg-bgSoft rounded-md transition-colors';
+                        fundHeader.onclick = () => selectProperty(fund.id);
+                        fundHeader.innerHTML = `
+                        <div class="text-xs font-semibold text-textMuted uppercase tracking-wider hover:text-textMain">${fund.name.split(' ').slice(-2).join(' ')}</div>
+                        <div class="text-[10px] text-textMuted">${fund.units.toLocaleString()} units • ${fund.occupancy}% occ • $${(fund.noi / 1000000).toFixed(0)}M NOI</div>
+                    `;
+                        container.appendChild(fundHeader);
+
+                        const fundProperties = propertiesData.filter(p => p.fundId === fund.id);
+                        fundProperties.forEach(prop => {
+                            const propDiv = createPropertyItem(prop.id, prop.name, `${prop.location} • ${prop.units} units • ${prop.occupancy}%`, selectedPropertyId === prop.id);
+                            propDiv.classList.add('ml-2');
+                            container.appendChild(propDiv);
+                        });
+                    });
+                } else {
+                    // Group by region (state)
+                    const regions = {};
+                    propertiesData.forEach(prop => {
+                        const state = prop.state;
+                        if (!regions[state]) {
+                            regions[state] = { properties: [], totalUnits: 0, avgOcc: 0 };
+                        }
+                        regions[state].properties.push(prop);
+                        regions[state].totalUnits += prop.units;
+                    });
+
+                    // Calculate avg occupancy per region
+                    Object.keys(regions).forEach(state => {
+                        const props = regions[state].properties;
+                        regions[state].avgOcc = (props.reduce((sum, p) => sum + p.occupancy, 0) / props.length).toFixed(1);
+                    });
+
+                    // Sort by state name
+                    const sortedStates = Object.keys(regions).sort();
+
+                    sortedStates.forEach(state => {
+                        const region = regions[state];
+                        const regionHeader = document.createElement('div');
+                        regionHeader.className = 'mt-3 mb-1 px-3 py-2 cursor-pointer hover:bg-bgSoft rounded-md transition-colors';
+                        regionHeader.onclick = () => selectRegion(state);
+                        regionHeader.innerHTML = `
+                        <div class="text-xs font-semibold text-textMuted uppercase tracking-wider hover:text-textMain">${state}</div>
+                        <div class="text-[10px] text-textMuted">${region.properties.length} properties • ${region.totalUnits.toLocaleString()} units • ${region.avgOcc}% occ</div>
+                    `;
+                        container.appendChild(regionHeader);
+
+                        region.properties.forEach(prop => {
+                            const propDiv = createPropertyItem(prop.id, prop.name, `${prop.units} units • ${prop.occupancy}%`, selectedPropertyId === prop.id);
+                            propDiv.classList.add('ml-2');
+                            container.appendChild(propDiv);
+                        });
+                    });
+                }
+            }
+
+            function selectRegion(state) {
+                // For now, just select the first property in that region
+                const prop = propertiesData.find(p => p.state === state);
+                if (prop) selectProperty(prop.id);
+            }
+
+            function createPropertyItem(id, name, subtitle, isActive) {
+                const div = document.createElement('div');
+                div.className = `sidebar-item ${isActive ? 'active' : ''}`;
+                div.dataset.propertyId = id;
+                div.innerHTML = `
+                <div class="font-medium text-sm text-textMain">${name}</div>
+                <div class="text-xs text-textMuted">${subtitle}</div>
+            `;
+                div.onclick = () => selectProperty(id);
+                return div;
+            }
+
+            function selectProperty(id) {
+                selectedPropertyId = id;
+                document.querySelectorAll('.sidebar-item').forEach(el => {
+                    el.classList.toggle('active', el.dataset.propertyId === id);
+                });
+
+                if (id === 'all' || id.startsWith('fund')) {
+                    showView('view-asset');
+                    renderSummaryCards();
+                    renderKPITable();
+                    renderRevenueTable();
+                    updateKPISummary();
+                } else {
+                    showPropertyDetail(id);
+                }
+            }
+
+            // ============================================
+            // SUMMARY CARDS
+            // ============================================
+            function renderSummaryCards() {
+                const container = document.getElementById('summaryCards');
+                const data = selectedPropertyId === 'all' ? portfolioData.portfolio :
+                    selectedPropertyId.startsWith('fund') ? portfolioData.funds.find(f => f.id === selectedPropertyId) : null;
+
+                if (!data) return;
+
+                const isPortfolio = selectedPropertyId === 'all';
+                const cards = [
+                    { label: 'Total AUM', value: `$${(data.totalAUM || data.nav || data.aum) / 1e9}B`, change: `+${data.ytdReturn || 12.4}% YTD`, positive: true },
+                    { label: 'Properties', value: isPortfolio ? data.totalProperties : data.properties, change: isPortfolio ? '2 Funds' : portfolioData.funds.find(f => f.id === selectedPropertyId)?.name.split(' ').pop() },
+                    { label: 'Total Units', value: (data.totalUnits || data.units).toLocaleString(), change: `${((data.totalSqft || data.sqft) / 1e6).toFixed(1)}M sq ft` },
+                    { label: 'Wtd Avg Occupancy', value: `${data.wtdAvgOccupancy || data.occupancy}%`, change: '+0.3pp MoM', positive: true },
+                    { label: 'Portfolio NOI (TTM)', value: `$${((data.portfolioNOI || data.noi) / 1e6).toFixed(1)}M`, change: `+${data.yoyNOIGrowth || 8.2}% YoY`, positive: true },
+                    { label: 'Avg Cap Rate', value: `${data.avgCapRate || data.capRate}%`, change: 'Market: 5.75%' }
+                ];
+
+                container.innerHTML = cards.map(c => `
+                <div class="kpi-card">
+                    <div class="kpi-label">${c.label}</div>
+                    <div class="kpi-value ${c.positive ? 'text-textMain' : 'text-textMain'}">${c.value}</div>
+                    <div class="text-xs ${c.positive ? 'text-accentTeal' : 'text-textMuted'} mt-1">${c.change}</div>
+                </div>
+            `).join('');
+            }
+
+            function updateKPISummary() {
+                const data = portfolioData.portfolio;
+                document.getElementById('kpi-summary').textContent =
+                    `Unit Count: ${data.totalUnits.toLocaleString()} | Net Rentable Area: ${data.totalSqft.toLocaleString()} sq ft | Avg Unit Size: ${Math.round(data.totalSqft / data.totalUnits)} sq ft`;
+            }
+
+            // ============================================
+            // KPI TABLE
+            // ============================================
+            function renderKPITable() {
+                const table = document.getElementById('kpiTable');
+                const months = monthlyData.months;
+                const kpi = monthlyData.aggregate.kpi;
+
+                table.querySelector('thead').innerHTML = `<tr><th>Component</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total/Avg</th></tr>`;
+
+                const rows = [
+                    { label: 'Average Gross Rent', data: kpi.avgGrossRent, format: 'currency', avg: true },
+                    { label: 'Average Effective Rent', data: kpi.avgEffectiveRent, format: 'currency', avg: true },
+                    { label: 'Concessions', data: kpi.concessions, format: 'percent', avg: true },
+                    { label: 'Occupancy', data: kpi.occupancy, format: 'percent', avg: true },
+                    { label: 'Bad Debt', data: kpi.badDebt, format: 'percent', avg: true },
+                    { label: 'Economic Occupancy', data: kpi.economicOccupancy, format: 'percent', avg: true },
+                    { label: 'Profit Margin', data: kpi.profitMargin, format: 'percent', avg: true },
+                    { label: 'Utilities/Unit', data: kpi.utilitiesPerUnit, format: 'currency', sum: true },
+                    { label: 'Total Maintenance/Unit', data: kpi.maintenancePerUnit, format: 'currency', sum: true },
+                    { label: 'Payroll, Marketing, G&A/Unit', data: kpi.payrollGAPerUnit, format: 'currency', sum: true },
+                    { label: 'Operating Expense Ratio', data: kpi.opexRatio, format: 'percent', avg: true },
+                ];
+
+                table.querySelector('tbody').innerHTML = rows.map(row => {
+                    const total = row.avg ? (row.data.reduce((a, b) => a + b, 0) / row.data.length).toFixed(1) : row.data.reduce((a, b) => a + b, 0);
+                    return `<tr>
+                    <td>${row.label}</td>
+                    ${row.data.map(v => `<td class="${v < 0 ? 'negative' : ''}">${formatValue(v, row.format)}</td>`).join('')}
+                    <td class="font-semibold">${formatValue(total, row.format)}</td>
+                </tr>`;
+                }).join('');
+            }
+
+            // ============================================
+            // REVENUE TABLE
+            // ============================================
+            function renderRevenueTable() {
+                const table = document.getElementById('revenueTable');
+                const months = monthlyData.months;
+                const rev = monthlyData.aggregate.revenue;
+                const exp = monthlyData.aggregate.expenses;
+                const noi = monthlyData.aggregate.noi;
+
+                table.querySelector('thead').innerHTML = `<tr><th>Component</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr>`;
+
+                const rows = [
+                    { label: 'Gross Potential Rent', data: rev.grossPotentialRent, header: true },
+                    { label: 'Potential Market Rent', data: rev.potentialMarketRent, indent: true },
+                    { label: 'Loss to Lease', data: rev.lossToLease, indent: true },
+                    { label: 'Vacancy Loss', data: rev.vacancyLoss },
+                    { label: 'Concessions', data: rev.concessions },
+                    { label: 'Bad Debt', data: rev.badDebt },
+                    { label: 'Net Rental Income', data: rev.netRentalIncome, total: true },
+                    { spacer: true },
+                    { label: 'Other Income', data: rev.otherIncome },
+                    { label: 'Total Revenue', data: rev.totalRevenue, total: true },
+                    { spacer: true },
+                    { label: 'Operating Expenses', header: true, headerOnly: true },
+                    { label: 'Property Taxes', data: exp.propertyTaxes, indent: true },
+                    { label: 'Insurance', data: exp.insurance, indent: true },
+                    { label: 'Utilities', data: exp.utilities, indent: true },
+                    { label: 'Repairs & Maintenance', data: exp.repairsMaintenance, indent: true },
+                    { label: 'Payroll', data: exp.payroll, indent: true },
+                    { label: 'Marketing', data: exp.marketing, indent: true },
+                    { label: 'G&A', data: exp.generalAdmin, indent: true },
+                    { label: 'Management Fee', data: exp.managementFee, indent: true },
+                    { label: 'Total Operating Expenses', data: exp.totalOpex, total: true },
+                    { spacer: true },
+                    { label: 'Net Operating Income (NOI)', data: noi, total: true, highlight: true },
+                ];
+
+                table.querySelector('tbody').innerHTML = rows.map(row => {
+                    if (row.spacer) return '<tr><td colspan="14" class="h-2"></td></tr>';
+                    if (row.headerOnly) return `<tr class="section-header"><td colspan="14">${row.label}</td></tr>`;
+                    const total = row.data?.reduce((a, b) => a + b, 0) || 0;
+                    return `<tr class="${row.total ? 'total-row' : ''} ${row.highlight ? 'highlight-row' : ''}">
+                    <td class="${row.indent ? 'indent' : ''} ${row.header ? 'font-semibold' : ''}">${row.label}</td>
+                    ${row.data ? row.data.map(v => `<td class="${v < 0 ? 'negative' : ''}">${formatMoney(v)}</td>`).join('') : ''}
+                    <td class="font-semibold ${total < 0 ? 'negative' : ''}">${row.data ? formatMoney(total) : ''}</td>
+                </tr>`;
+                }).join('');
+            }
+
+            // ============================================
+            // PORTFOLIO VIEW
+            // ============================================
+            let fundBarChartInstance = null;
+            let donutChartInstance = null;
+            let regionBarChartInstance = null;
+
+            function renderPortfolioView() {
+                // Update portfolio summary cards
+                const pfTotalProperties = document.getElementById('pf-totalProperties');
+                const pfTotalUnits = document.getElementById('pf-totalUnits');
+                const pfTotalValue = document.getElementById('pf-totalValue');
+                const pfAvgOccupancy = document.getElementById('pf-avgOccupancy');
+
+                if (pfTotalProperties && propertiesData) {
+                    pfTotalProperties.textContent = propertiesData.length;
+                    pfTotalUnits.textContent = portfolioData.portfolio.totalUnits.toLocaleString();
+                    const totalValue = propertiesData.reduce((sum, p) => sum + p.currentValue, 0);
+                    pfTotalValue.textContent = `$${(totalValue / 1e9).toFixed(1)}B`;
+                    const avgOcc = (propertiesData.reduce((sum, p) => sum + p.occupancy, 0) / propertiesData.length).toFixed(1);
+                    pfAvgOccupancy.textContent = `${avgOcc}%`;
+                }
+
+                // Render Charts
+                renderFundBarChart();
+                renderPropertyDonutChart();
+                renderRegionBarChart();
+                renderYoYCharts();
+                renderIRRCharts();
+                renderReturnCharts();
+                renderDistributionCharts();
+                renderPropertyAnalyticsCharts();
+
+                // Property Table
+                renderPropertyTable();
+            }
+
+            function renderFundBarChart(fundId = 'all') {
+                const ctx = document.getElementById('fundBarChart').getContext('2d');
+                if (fundBarChartInstance) fundBarChartInstance.destroy();
+
+                // Group properties by fund and calculate total units
+                let fundData = portfolioData.funds.map((f, idx) => ({
+                    name: f.name.split(' ').slice(-2).join(' '),
+                    units: f.units,
+                    fundId: idx === 0 ? 'fund1' : 'fund2'
+                }));
+
+                // Filter by fund if specific fund is selected
+                if (fundId !== 'all') {
+                    fundData = fundData.filter(f => f.fundId === fundId);
+                }
+
+                const colors = fundId === 'fund1' ? ['#6366f1'] : fundId === 'fund2' ? ['#a855f7'] : ['#6366f1', '#a855f7'];
+
+                fundBarChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: fundData.map(f => f.name),
+                        datasets: [{
+                            label: 'Total Units',
+                            data: fundData.map(f => f.units),
+                            backgroundColor: colors,
+                            borderRadius: 4,
+                            barThickness: 60
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `${ctx.parsed.y.toLocaleString()} units`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 7000,
+                                ticks: {
+                                    callback: v => v.toLocaleString(),
+                                    font: { size: 10 }
+                                },
+                                grid: { color: '#e2e8f0' },
+                                title: { display: true, text: 'Total Units', font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderPropertyDonutChart(fundId = 'all') {
+                const ctx = document.getElementById('propertyDonutChart').getContext('2d');
+                if (donutChartInstance) donutChartInstance.destroy();
+
+                // Filter properties by fund
+                const filteredProps = fundId === 'all'
+                    ? propertiesData
+                    : propertiesData.filter(p => p.fundId === fundId);
+
+                // Get top properties by units
+                const sortedProps = [...filteredProps].sort((a, b) => b.units - a.units).slice(0, 8);
+                const otherUnits = filteredProps.reduce((sum, p) => sum + p.units, 0) - sortedProps.reduce((sum, p) => sum + p.units, 0);
+
+                const colors = ['#6366f1', '#f59e0b', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'];
+                const labels = sortedProps.map(p => p.name);
+                const data = sortedProps.map(p => p.units);
+
+                if (otherUnits > 0) {
+                    labels.push('Others');
+                    data.push(otherUnits);
+                }
+
+                const total = data.reduce((a, b) => a + b, 0);
+
+                donutChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    font: { size: 10 },
+                                    boxWidth: 12,
+                                    padding: 8,
+                                    generateLabels: (chart) => {
+                                        const data = chart.data;
+                                        return data.labels.map((label, i) => ({
+                                            text: `${label}`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].backgroundColor[i],
+                                            hidden: false,
+                                            index: i
+                                        }));
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                        return `${ctx.label}: ${ctx.parsed.toLocaleString()} units (${pct}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderRegionBarChart() {
+                const ctx = document.getElementById('regionBarChart').getContext('2d');
+                if (regionBarChartInstance) regionBarChartInstance.destroy();
+
+                // Group properties by state/region
+                const regionData = {};
+                propertiesData.forEach(prop => {
+                    const state = prop.state;
+                    if (!regionData[state]) regionData[state] = { fund1: 0, fund2: 0 };
+                    if (prop.fundId === 'fund1') regionData[state].fund1 += prop.units;
+                    else regionData[state].fund2 += prop.units;
+                });
+
+                const regions = Object.keys(regionData).sort((a, b) =>
+                    (regionData[b].fund1 + regionData[b].fund2) - (regionData[a].fund1 + regionData[a].fund2)
+                );
+
+                regionBarChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: regions,
+                        datasets: [
+                            {
+                                label: 'Fund I',
+                                data: regions.map(r => regionData[r].fund1),
+                                backgroundColor: '#6366f1',
+                                borderRadius: 2
+                            },
+                            {
+                                label: 'Fund II',
+                                data: regions.map(r => regionData[r].fund2),
+                                backgroundColor: '#a855f7',
+                                borderRadius: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { font: { size: 10 }, boxWidth: 12 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} units`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => v.toLocaleString(),
+                                    font: { size: 10 }
+                                },
+                                grid: { color: '#e2e8f0' },
+                                title: { display: true, text: 'Total Units', font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Portfolio Analytics Chart Instances
+            let yoyFundChartInstance = null;
+            let yoyRegionChartInstance = null;
+            let irrFundChartInstance = null;
+            let irrRegionChartInstance = null;
+            let returnFundChartInstance = null;
+            let returnRegionChartInstance = null;
+            let distChartInstances = {};
+
+            function renderYoYCharts() {
+                // Calculate actual YoY data from propertiesData
+                const fund1Props = propertiesData.filter(p => p.fundId === 'fund1');
+                const fund2Props = propertiesData.filter(p => p.fundId === 'fund2');
+
+                const fund1YoYChange = fund1Props.reduce((sum, p) => sum + (p.currentValue - p.purchasePrice), 0) / 1e6;
+                const fund2YoYChange = fund2Props.reduce((sum, p) => sum + (p.currentValue - p.purchasePrice), 0) / 1e6;
+
+                // YoY by Fund
+                const ctx1 = document.getElementById('yoyFundChart')?.getContext('2d');
+                if (ctx1) {
+                    if (yoyFundChartInstance) yoyFundChartInstance.destroy();
+                    yoyFundChartInstance = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Fund I', 'Fund II'],
+                            datasets: [{
+                                label: 'Value Change ($M)',
+                                data: [fund1YoYChange.toFixed(2), fund2YoYChange.toFixed(2)],
+                                backgroundColor: ['#3b82f6', '#06b6d4'],
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { callbacks: { label: ctx => `$${parseFloat(ctx.parsed.y).toFixed(2)}M` } }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Change ($M)', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+
+                // YoY by Region (based on actual states)
+                const regionData = {};
+                propertiesData.forEach(p => {
+                    if (!regionData[p.state]) regionData[p.state] = 0;
+                    regionData[p.state] += (p.currentValue - p.purchasePrice);
+                });
+                const sortedRegions = Object.entries(regionData).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+                const ctx2 = document.getElementById('yoyRegionChart')?.getContext('2d');
+                if (ctx2) {
+                    if (yoyRegionChartInstance) yoyRegionChartInstance.destroy();
+                    yoyRegionChartInstance = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedRegions.map(r => r[0]),
+                            datasets: [{
+                                label: 'Value Change ($M)',
+                                data: sortedRegions.map(r => (r[1] / 1e6).toFixed(2)),
+                                backgroundColor: ctx => parseFloat(ctx.parsed?.y || 0) >= 0 ? '#3b82f6' : '#ef4444',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `$${parseFloat(ctx.parsed.y).toFixed(2)}M` } } },
+                            scales: {
+                                y: { title: { display: true, text: 'Change ($M)', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'State', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function renderIRRCharts() {
+                // Calculate IRR based on actual appreciation rates
+                const fund1Props = propertiesData.filter(p => p.fundId === 'fund1');
+                const fund2Props = propertiesData.filter(p => p.fundId === 'fund2');
+
+                const fund1AvgIRR = fund1Props.reduce((sum, p) => sum + p.appreciation, 0) / fund1Props.length;
+                const fund2AvgIRR = fund2Props.reduce((sum, p) => sum + p.appreciation, 0) / fund2Props.length;
+
+                // IRR by Fund (Realized vs Unrealized estimate)
+                const ctx1 = document.getElementById('irrFundChart')?.getContext('2d');
+                if (ctx1) {
+                    if (irrFundChartInstance) irrFundChartInstance.destroy();
+                    irrFundChartInstance = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Fund I', 'Fund II'],
+                            datasets: [
+                                { label: 'Realized', data: [(fund1AvgIRR * 0.4).toFixed(2), (fund2AvgIRR * 0.3).toFixed(2)], backgroundColor: '#3b82f6', borderRadius: 2 },
+                                { label: 'Unrealized', data: [(fund1AvgIRR * 0.6).toFixed(2), (fund2AvgIRR * 0.7).toFixed(2)], backgroundColor: '#94a3b8', borderRadius: 2 }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { size: 9 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%` } } },
+                            scales: {
+                                y: { beginAtZero: true, max: 30, title: { display: true, text: 'Gross IRR (%)', font: { size: 10 } }, ticks: { font: { size: 9 } } },
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'Fund', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+
+                // IRR by State/Region
+                const regionIRR = {};
+                const regionCount = {};
+                propertiesData.forEach(p => {
+                    if (!regionIRR[p.state]) { regionIRR[p.state] = 0; regionCount[p.state] = 0; }
+                    regionIRR[p.state] += p.appreciation;
+                    regionCount[p.state]++;
+                });
+                const sortedIRR = Object.entries(regionIRR).map(([st, total]) => [st, total / regionCount[st]]).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+                const ctx2 = document.getElementById('irrRegionChart')?.getContext('2d');
+                if (ctx2) {
+                    if (irrRegionChartInstance) irrRegionChartInstance.destroy();
+                    irrRegionChartInstance = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedIRR.map(r => r[0]),
+                            datasets: [
+                                { label: 'Realized', data: sortedIRR.map(r => (r[1] * 0.5).toFixed(2)), backgroundColor: '#3b82f6', borderRadius: 2 },
+                                { label: 'Unrealized', data: sortedIRR.map(r => (r[1] * 0.5).toFixed(2)), backgroundColor: '#94a3b8', borderRadius: 2 }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { size: 9 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%` } } },
+                            scales: {
+                                y: { beginAtZero: true, max: 30, title: { display: true, text: 'Gross IRR (%)', font: { size: 10 } }, ticks: { font: { size: 9 } } },
+                                x: { grid: { display: false }, ticks: { font: { size: 9 } }, title: { display: true, text: 'State', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function renderReturnCharts() {
+                // Calculate Total Return from actual data
+                const fund1Props = propertiesData.filter(p => p.fundId === 'fund1');
+                const fund2Props = propertiesData.filter(p => p.fundId === 'fund2');
+
+                const fund1NAV = fund1Props.reduce((sum, p) => sum + p.currentValue, 0) / 1e6;
+                const fund2NAV = fund2Props.reduce((sum, p) => sum + p.currentValue, 0) / 1e6;
+                const fund1CashFlow = fund1Props.reduce((sum, p) => sum + p.cashFlow, 0) / 1e6;
+                const fund2CashFlow = fund2Props.reduce((sum, p) => sum + p.cashFlow, 0) / 1e6;
+
+                // Total Return by Fund
+                const ctx1 = document.getElementById('returnFundChart')?.getContext('2d');
+                if (ctx1) {
+                    if (returnFundChartInstance) returnFundChartInstance.destroy();
+                    returnFundChartInstance = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Fund I', 'Fund II'],
+                            datasets: [
+                                { label: 'NAV', data: [fund1NAV.toFixed(2), fund2NAV.toFixed(2)], backgroundColor: '#3b82f6', stack: 'stack1' },
+                                { label: 'Cash Flow', data: [fund1CashFlow.toFixed(2), fund2CashFlow.toFixed(2)], backgroundColor: '#06b6d4', stack: 'stack1' }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { size: 9 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: $${parseFloat(ctx.parsed.y).toFixed(2)}M` } } },
+                            scales: {
+                                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Total Return ($M)', font: { size: 10 } }, ticks: { font: { size: 9 } } },
+                                x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: 'Fund', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+
+                // Total Return by Region/State
+                const regionNAV = {};
+                propertiesData.forEach(p => {
+                    if (!regionNAV[p.state]) regionNAV[p.state] = { nav: 0, cashFlow: 0 };
+                    regionNAV[p.state].nav += p.currentValue;
+                    regionNAV[p.state].cashFlow += p.cashFlow;
+                });
+                const sortedReturns = Object.entries(regionNAV).sort((a, b) => b[1].nav - a[1].nav).slice(0, 8);
+
+                const ctx2 = document.getElementById('returnRegionChart')?.getContext('2d');
+                if (ctx2) {
+                    if (returnRegionChartInstance) returnRegionChartInstance.destroy();
+                    returnRegionChartInstance = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedReturns.map(r => r[0]),
+                            datasets: [
+                                { label: 'NAV', data: sortedReturns.map(r => (r[1].nav / 1e6).toFixed(2)), backgroundColor: '#3b82f6', stack: 'stack1' },
+                                { label: 'Cash Flow', data: sortedReturns.map(r => (r[1].cashFlow / 1e6).toFixed(2)), backgroundColor: '#06b6d4', stack: 'stack1' }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { font: { size: 9 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: $${parseFloat(ctx.parsed.y).toFixed(2)}M` } } },
+                            scales: {
+                                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Total Return ($M)', font: { size: 10 } }, ticks: { font: { size: 9 } } },
+                                x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } }, title: { display: true, text: 'State', font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function renderDistributionCharts() {
+                // Calculate distribution data from actual funds
+                const fund1Props = propertiesData.filter(p => p.fundId === 'fund1');
+                const fund2Props = propertiesData.filter(p => p.fundId === 'fund2');
+
+                const fund1Total = fund1Props.reduce((sum, p) => sum + p.currentValue + p.cashFlow, 0);
+                const fund2Total = fund2Props.reduce((sum, p) => sum + p.currentValue + p.cashFlow, 0);
+
+                const distData = [
+                    {
+                        id: 'distFund1Chart',
+                        label: 'Fund I',
+                        nav: (fund1Props.reduce((s, p) => s + p.currentValue, 0) / fund1Total * 100).toFixed(2),
+                        cashFlow: (fund1Props.reduce((s, p) => s + p.cashFlow, 0) / fund1Total * 100).toFixed(2)
+                    },
+                    {
+                        id: 'distFund2Chart',
+                        label: 'Fund II',
+                        nav: (fund2Props.reduce((s, p) => s + p.currentValue, 0) / fund2Total * 100).toFixed(2),
+                        cashFlow: (fund2Props.reduce((s, p) => s + p.cashFlow, 0) / fund2Total * 100).toFixed(2)
+                    }
+                ];
+
+                distData.forEach(d => {
+                    const ctx = document.getElementById(d.id)?.getContext('2d');
+                    if (ctx) {
+                        if (distChartInstances[d.id]) distChartInstances[d.id].destroy();
+                        distChartInstances[d.id] = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['NAV', 'Cash Flow'],
+                                datasets: [{
+                                    data: [parseFloat(d.nav), parseFloat(d.cashFlow)],
+                                    backgroundColor: ['#3b82f6', '#06b6d4'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                cutout: '60%',
+                                plugins: {
+                                    legend: { position: 'bottom', labels: { font: { size: 8 }, boxWidth: 8, padding: 4 } },
+                                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toFixed(2)}%` } }
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            // ============================================
+            // PROPERTY ANALYTICS CHARTS (Real Data)
+            // ============================================
+            let propertyNoiChartInstance = null;
+            let badDebtChartInstance = null;
+            let turnoverChartInstance = null;
+            let occupancyCompareChartInstance = null;
+            let lossToLeaseChartInstance = null;
+            let capRateLtvChartInstance = null;
+
+            function renderPropertyAnalyticsCharts(fundFilter = 'all') {
+                if (!propertiesData) return;
+
+                const filtered = fundFilter === 'all'
+                    ? propertiesData
+                    : propertiesData.filter(p => p.fundId === fundFilter);
+
+                renderPropertyNoiChart(filtered);
+                renderBadDebtChart(filtered);
+                renderTurnoverChart(filtered);
+                renderOccupancyCompareChart(filtered);
+                renderLossToLeaseChart(filtered);
+                renderCapRateLtvChart(filtered);
+            }
+
+            function renderPropertyNoiChart(data) {
+                const ctx = document.getElementById('propertyNoiChart')?.getContext('2d');
+                if (!ctx) return;
+                if (propertyNoiChartInstance) propertyNoiChartInstance.destroy();
+
+                // Sort by NOI and take top 10
+                const sorted = [...data].sort((a, b) => b.noi - a.noi).slice(0, 10);
+                const colors = sorted.map(p => p.fundId === 'fund1' ? '#3b82f6' : '#06b6d4');
+
+                propertyNoiChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(p => p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name),
+                        datasets: [{
+                            label: 'NOI',
+                            data: sorted.map(p => p.noi / 1e6),
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `NOI: $${ctx.parsed.x.toFixed(2)}M`,
+                                    afterLabel: ctx => {
+                                        const prop = sorted[ctx.dataIndex];
+                                        return `Fund: ${prop.fundName}\nCap Rate: ${prop.capRate}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: { callback: v => `$${v}M`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+
+            function renderBadDebtChart(data) {
+                const ctx = document.getElementById('badDebtChart')?.getContext('2d');
+                if (!ctx) return;
+                if (badDebtChartInstance) badDebtChartInstance.destroy();
+
+                // Sort by bad debt (highest first) and take top 10
+                const sorted = [...data].sort((a, b) => b.badDebt - a.badDebt).slice(0, 10);
+                const colors = sorted.map(p => {
+                    if (p.badDebt > 1.0) return '#ef4444';
+                    if (p.badDebt > 0.5) return '#f59e0b';
+                    return '#10b981';
+                });
+
+                badDebtChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(p => p.name.length > 12 ? p.name.substring(0, 12) + '...' : p.name),
+                        datasets: [{
+                            label: 'Bad Debt %',
+                            data: sorted.map(p => p.badDebt),
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `Bad Debt: ${ctx.parsed.x}%`,
+                                    afterLabel: ctx => `Fund: ${sorted[ctx.dataIndex].fundName}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 2.5,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                        }
+                    }
+                });
+            }
+
+            function renderTurnoverChart(data) {
+                const ctx = document.getElementById('turnoverChart')?.getContext('2d');
+                if (!ctx) return;
+                if (turnoverChartInstance) turnoverChartInstance.destroy();
+
+                // Sort by turnover rate (highest first) and take top 10
+                const sorted = [...data].sort((a, b) => b.turnoverRate - a.turnoverRate).slice(0, 10);
+                const colors = sorted.map(p => {
+                    if (p.turnoverRate > 45) return '#ef4444';
+                    if (p.turnoverRate > 38) return '#f59e0b';
+                    return '#10b981';
+                });
+
+                turnoverChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(p => p.name.length > 12 ? p.name.substring(0, 12) + '...' : p.name),
+                        datasets: [{
+                            label: 'Turnover Rate',
+                            data: sorted.map(p => p.turnoverRate),
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `Turnover: ${ctx.parsed.x}%`,
+                                    afterLabel: ctx => `Fund: ${sorted[ctx.dataIndex].fundName}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 60,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                        }
+                    }
+                });
+            }
+
+            function renderOccupancyCompareChart(data) {
+                const ctx = document.getElementById('occupancyCompareChart')?.getContext('2d');
+                if (!ctx) return;
+                if (occupancyCompareChartInstance) occupancyCompareChartInstance.destroy();
+
+                // Sort by gap between physical and economic occupancy
+                const sorted = [...data].sort((a, b) =>
+                    (b.occupancy - b.economicOccupancy) - (a.occupancy - a.economicOccupancy)
+                ).slice(0, 12);
+
+                occupancyCompareChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(p => p.name.length > 10 ? p.name.substring(0, 10) + '...' : p.name),
+                        datasets: [
+                            {
+                                label: 'Physical',
+                                data: sorted.map(p => p.occupancy),
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 2,
+                                barPercentage: 0.6
+                            },
+                            {
+                                label: 'Economic',
+                                data: sorted.map(p => p.economicOccupancy),
+                                backgroundColor: '#06b6d4',
+                                borderRadius: 2,
+                                barPercentage: 0.6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12 } },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: ctx => {
+                                        const prop = sorted[ctx.dataIndex];
+                                        const gap = (prop.occupancy - prop.economicOccupancy).toFixed(1);
+                                        return `Gap: ${gap}pp`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                min: 88,
+                                max: 100,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            x: { grid: { display: false }, ticks: { font: { size: 8 }, maxRotation: 45 } }
+                        }
+                    }
+                });
+            }
+
+            function renderLossToLeaseChart(data) {
+                const ctx = document.getElementById('lossToLeaseChart')?.getContext('2d');
+                if (!ctx) return;
+                if (lossToLeaseChartInstance) lossToLeaseChartInstance.destroy();
+
+                // Sort by loss to lease (highest first)
+                const sorted = [...data].sort((a, b) => b.lossToLease - a.lossToLease).slice(0, 12);
+                const colors = sorted.map(p => {
+                    if (p.lossToLease > 6) return '#ef4444';
+                    if (p.lossToLease > 4) return '#f59e0b';
+                    return '#10b981';
+                });
+
+                lossToLeaseChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sorted.map(p => p.name.length > 10 ? p.name.substring(0, 10) + '...' : p.name),
+                        datasets: [{
+                            label: 'Loss to Lease',
+                            data: sorted.map(p => p.lossToLease),
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `Loss to Lease: ${ctx.parsed.y}%`,
+                                    afterLabel: ctx => {
+                                        const prop = sorted[ctx.dataIndex];
+                                        return `Avg Rent: $${prop.avgRent}\nMarket Rent: $${prop.marketRent}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            x: { grid: { display: false }, ticks: { font: { size: 8 }, maxRotation: 45 } }
+                        }
+                    }
+                });
+            }
+
+            function renderCapRateLtvChart(data) {
+                const ctx = document.getElementById('capRateLtvChart')?.getContext('2d');
+                if (!ctx) return;
+                if (capRateLtvChartInstance) capRateLtvChartInstance.destroy();
+
+                const fund1Data = data.filter(p => p.fundId === 'fund1').map(p => ({
+                    x: p.ltv,
+                    y: p.capRate,
+                    r: Math.sqrt(p.units) * 1.2,
+                    name: p.name,
+                    units: p.units
+                }));
+
+                const fund2Data = data.filter(p => p.fundId === 'fund2').map(p => ({
+                    x: p.ltv,
+                    y: p.capRate,
+                    r: Math.sqrt(p.units) * 1.2,
+                    name: p.name,
+                    units: p.units
+                }));
+
+                capRateLtvChartInstance = new Chart(ctx, {
+                    type: 'bubble',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Fund I',
+                                data: fund1Data,
+                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                borderColor: '#3b82f6',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Fund II',
+                                data: fund2Data,
+                                backgroundColor: 'rgba(6, 182, 212, 0.6)',
+                                borderColor: '#06b6d4',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const d = ctx.raw;
+                                        return [
+                                            d.name,
+                                            `LTV: ${d.x}%`,
+                                            `Cap Rate: ${d.y}%`,
+                                            `Units: ${d.units}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'LTV (%)', font: { size: 10 } },
+                                min: 54,
+                                max: 66,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Cap Rate (%)', font: { size: 10 } },
+                                min: 6,
+                                max: 9,
+                                ticks: { callback: v => `${v}%`, font: { size: 10 } },
+                                grid: { color: '#e2e8f0' }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            function setPortfolioSubTab(tab) {
+                currentPortfolioSubTab = tab;
+
+                // Update active state
+                ['properties', 'loans'].forEach(t => {
+                    const btn = document.getElementById(`subtab-${t}`);
+                    if (btn) {
+                        btn.classList.toggle('text-accentBlue', t === tab);
+                        btn.classList.toggle('text-textMuted', t !== tab);
+                    }
+                });
+
+                // Toggle sections visibility
+                const portfolioView = document.getElementById('view-portfolio');
+                const loanSection = document.getElementById('loansSubsection');
+                const allSections = portfolioView.children;
+
+                if (tab === 'loans') {
+                    // Show Loans, hide Properties content
+                    Array.from(allSections).forEach(el => {
+                        if (el.id === 'loansSubsection') {
+                            el.classList.remove('hidden');
+                        } else {
+                            el.classList.add('hidden');
+                        }
+                    });
+                    renderLoanAnalytics();
+                } else {
+                    // Show Properties content, hide Loans
+                    Array.from(allSections).forEach(el => {
+                        if (el.id === 'loansSubsection') {
+                            el.classList.add('hidden');
+                        } else {
+                            el.classList.remove('hidden');
+                        }
+                    });
+                }
+            }
+
+            let currentPortfolioFund = 'all';
+
+            function setPortfolioFund(fundId) {
+                currentPortfolioFund = fundId;
+
+                // Update button styles
+                ['all', 'fund1', 'fund2'].forEach(f => {
+                    const btn = document.getElementById(`pf-${f}`);
+                    if (btn) {
+                        if (f === fundId) {
+                            btn.className = 'text-xs px-3 py-1.5 rounded-full font-medium bg-slate-800 text-white';
+                        } else {
+                            btn.className = 'text-xs px-3 py-1.5 rounded-full font-medium text-textMuted hover:bg-bgSoft';
+                        }
+                    }
+                });
+
+                // Show/hide fund comparison section based on selection
+                const fundComparisonSection = document.getElementById('fundComparisonSection');
+                if (fundComparisonSection) {
+                    if (fundId === 'all') {
+                        fundComparisonSection.classList.remove('hidden');
+                    } else {
+                        fundComparisonSection.classList.add('hidden');
+                    }
+                }
+
+                // Calculate and update summary stats based on fund filter
+                if (propertiesData) {
+                    const filtered = fundId === 'all'
+                        ? propertiesData
+                        : propertiesData.filter(p => p.fundId === fundId);
+
+                    const totalProperties = filtered.length;
+                    const totalUnits = filtered.reduce((sum, p) => sum + p.units, 0);
+                    const totalValue = filtered.reduce((sum, p) => sum + p.currentValue, 0);
+                    const avgOccupancy = filtered.length > 0
+                        ? (filtered.reduce((sum, p) => sum + p.occupancy, 0) / filtered.length).toFixed(1)
+                        : 0;
+
+                    document.getElementById('pf-totalProperties').textContent = totalProperties;
+                    document.getElementById('pf-totalUnits').textContent = totalUnits.toLocaleString();
+                    document.getElementById('pf-totalValue').textContent = `$${(totalValue / 1e9).toFixed(1)}B`;
+                    document.getElementById('pf-avgOccupancy').textContent = `${avgOccupancy}%`;
+                    document.getElementById('pf-fundCount').textContent = fundId === 'all' ? '2' : '1';
+
+                    // Update trend indicators based on fund
+                    const trendData = {
+                        'all': { units: '+312 YTD', value: '+8.5% YoY', occupancy: '+0.3pp MoM' },
+                        'fund1': { units: '+156 YTD', value: '+9.2% YoY', occupancy: '+0.4pp MoM' },
+                        'fund2': { units: '+156 YTD', value: '+7.8% YoY', occupancy: '+0.2pp MoM' }
+                    };
+                    const trends = trendData[fundId] || trendData['all'];
+                    document.getElementById('pf-unitsChange').textContent = trends.units;
+                    document.getElementById('pf-valueChange').textContent = trends.value;
+                    document.getElementById('pf-occupancyChange').textContent = trends.occupancy;
+
+                    // Re-render property table with filtered data
+                    renderPropertyTable(filtered);
+
+                    // Re-render charts with filtered data
+                    renderFundBarChart(fundId);
+                    renderPropertyDonutChart(fundId);
+
+                    // Re-render property analytics charts with filtered data
+                    renderPropertyAnalyticsCharts(fundId);
+                }
+            }
+
+            // ============================================
+            // LOAN ANALYTICS
+            // ============================================
+            let loanBalanceChartInstance = null;
+            let loanDonutChartInstance = null;
+            let maturityChartInstance = null;
+
+            function renderLoanAnalytics() {
+                if (!loansData) return;
+
+                // Update total
+                document.getElementById('totalLoanBalanceDisplay').textContent =
+                    '$' + loansData.summary.totalLoanBalance.toLocaleString();
+
+                // Render KPIs
+                renderLoanKPIs();
+
+                // Render Charts
+                renderLoanBalanceChart();
+                renderLoanDonutChart();
+                renderMaturityChart();
+
+                // Render Table
+                renderLoanTable();
+            }
+
+            function renderLoanKPIs() {
+                const kpis = document.getElementById('loanKpis');
+                const s = loansData.summary;
+                kpis.innerHTML = [
+                    { label: 'Total Balance', value: `$${(s.totalLoanBalance / 1e9).toFixed(2)}B` },
+                    { label: 'Wtd Avg Rate', value: `${s.weightedAvgRate}%` },
+                    { label: 'Wtd Avg LTV', value: `${s.wtdAvgLTV}%` },
+                    { label: 'Avg DSCR', value: `${s.avgDSCR}x` },
+                    { label: 'Fixed Rate', value: `${s.fixedRatePercent}%` },
+                    { label: 'Avg Term', value: `${s.avgRemainingTerm} yrs` },
+                ].map(k => `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-value text-lg">${k.value}</div></div>`).join('');
+            }
+
+            function renderLoanBalanceChart() {
+                const ctx = document.getElementById('loanBalanceChart').getContext('2d');
+                if (loanBalanceChartInstance) loanBalanceChartInstance.destroy();
+
+                const fundData = loansData.byFund;
+
+                loanBalanceChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: fundData.map(f => f.fundName),
+                        datasets: [{
+                            label: 'Loan Balance',
+                            data: fundData.map(f => f.loanBalance / 1e6),
+                            backgroundColor: ['#6366f1', '#a855f7'],
+                            borderRadius: 4,
+                            barThickness: 60
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `$${ctx.parsed.y.toFixed(0)}M`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => `$${v}M`,
+                                    font: { size: 10 }
+                                },
+                                grid: { color: '#e2e8f0' },
+                                title: { display: true, text: 'Loan ($M)', font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderLoanDonutChart() {
+                const ctx = document.getElementById('loanDonutChart').getContext('2d');
+                if (loanDonutChartInstance) loanDonutChartInstance.destroy();
+
+                // Top loans by balance
+                const sortedLoans = [...loansData.loans].sort((a, b) => b.currentBalance - a.currentBalance).slice(0, 8);
+                const otherBalance = loansData.loans.reduce((sum, l) => sum + l.currentBalance, 0) -
+                    sortedLoans.reduce((sum, l) => sum + l.currentBalance, 0);
+
+                const colors = ['#6366f1', '#f59e0b', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'];
+                const labels = sortedLoans.map(l => l.propertyName);
+                const data = sortedLoans.map(l => l.currentBalance / 1e6);
+
+                if (otherBalance > 0) {
+                    labels.push('Others');
+                    data.push(otherBalance / 1e6);
+                }
+
+                const total = data.reduce((a, b) => a + b, 0);
+
+                loanDonutChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { font: { size: 9 }, boxWidth: 10, padding: 6 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                        return `$${ctx.parsed.toFixed(1)}M (${pct}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderMaturityChart() {
+                const ctx = document.getElementById('maturityChart').getContext('2d');
+                if (maturityChartInstance) maturityChartInstance.destroy();
+
+                const maturity = loansData.maturitySchedule;
+
+                maturityChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: maturity.map(m => m.year),
+                        datasets: [{
+                            label: 'Maturing Balance',
+                            data: maturity.map(m => m.amount / 1e6),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => `$${ctx.parsed.y.toFixed(0)}M`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => `$${v}M`,
+                                    font: { size: 10 }
+                                },
+                                grid: { color: '#e2e8f0' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderLoanTable() {
+                const table = document.getElementById('loanTable');
+                table.querySelector('thead').innerHTML = `<tr>
+                <th>Property</th><th>Lender</th><th>Type</th><th>Balance</th>
+                <th>Rate</th><th>Rate Type</th><th>LTV</th><th>DSCR</th><th>Maturity</th>
+            </tr>`;
+
+                table.querySelector('tbody').innerHTML = loansData.loans.map(l => `
+                <tr>
+                    <td class="font-medium">${l.propertyName}</td>
+                    <td>${l.lender}</td>
+                    <td>${l.loanType}</td>
+                    <td>$${(l.currentBalance / 1e6).toFixed(1)}M</td>
+                    <td>${l.interestRate}%</td>
+                    <td class="${l.rateType === 'Floating' ? 'text-amber-600' : ''}">${l.rateType}</td>
+                    <td>${l.ltv}%</td>
+                    <td class="${l.dscr < 1.35 ? 'negative' : ''}">${l.dscr}x</td>
+                    <td>${l.maturityDate.slice(0, 4)}</td>
+                </tr>
+            `).join('');
+            }
+
+            function renderPropertyTable(filteredData = null) {
+                const data = filteredData || propertiesData;
+                const table = document.getElementById('propertyTable');
+                table.querySelector('thead').innerHTML = `<tr>
+                <th>Property</th><th>Location</th><th>Fund</th><th>Units</th><th>Year Built</th>
+                <th>Occupancy</th><th>Avg Rent</th><th>NOI</th><th>Cap Rate</th><th>Bad Debt</th>
+            </tr>`;
+
+                table.querySelector('tbody').innerHTML = data.map(p => `
+                <tr class="cursor-pointer hover:bg-bgSoft" onclick="selectProperty('${p.id}')">
+                    <td class="font-medium">${p.name}</td>
+                    <td>${p.location}</td>
+                    <td>${p.fundName}</td>
+                    <td>${p.units}</td>
+                    <td>${p.yearBuilt}</td>
+                    <td class="${p.occupancy >= 95 ? 'positive' : p.occupancy < 94 ? 'negative' : ''}">${p.occupancy}%</td>
+                    <td>$${p.avgRent.toLocaleString()}</td>
+                    <td>$${(p.noi / 1e6).toFixed(1)}M</td>
+                    <td>${p.capRate}%</td>
+                    <td class="${p.badDebt > 1 ? 'negative' : ''}">${p.badDebt}%</td>
+                </tr>
+            `).join('');
+            }
+
+            // ============================================
+            // PROPERTY DETAIL VIEW
+            // ============================================
+
+            function generatePropertyHighlights(prop) {
+                const highlights = [];
+
+                // Geographic/Location highlights based on state/city
+                const locationHighlights = {
+                    'TX': ['Strategic Texas Triangle location', 'Strong job growth market', 'No state income tax advantage'],
+                    'CO': ['Premier Denver metro location', 'Mountain views and outdoor access', 'Thriving tech employment hub'],
+                    'AZ': ['High-growth Phoenix corridor', 'Year-round warm climate', 'Major population influx market'],
+                    'NV': ['Las Vegas entertainment proximity', 'Tax-friendly Nevada location', '24/7 lifestyle amenity access'],
+                    'FL': ['Florida sunshine state appeal', 'Tourism-driven economy proximity', 'Retiree migration destination'],
+                    'NC': ['Research Triangle access', 'Moderate cost of living', 'Strong university talent pipeline'],
+                    'GA': ['Atlanta metro connectivity', 'Fortune 500 corporate proximity', 'Major transportation hub'],
+                    'TN': ['Nashville growth corridor', 'Entertainment industry proximity', 'No state income tax']
+                };
+
+                if (locationHighlights[prop.state]) {
+                    highlights.push(locationHighlights[prop.state][0]);
+                }
+
+                // Class-based highlights
+                if (prop.classType.includes('A')) {
+                    highlights.push('Class A luxury finishes and amenities');
+                    highlights.push('Premium tenant demographic profile');
+                } else if (prop.classType.includes('B+')) {
+                    highlights.push('Value-add Class B+ asset potential');
+                    highlights.push('Strong rent growth trajectory');
+                } else if (prop.classType.includes('B')) {
+                    highlights.push('Workforce housing stability');
+                    highlights.push('Below-market affordability advantage');
+                }
+
+                // Property type highlights
+                if (prop.propertyType === 'Garden Style') {
+                    highlights.push('Garden-style low-density living');
+                } else if (prop.propertyType === 'Mid-Rise') {
+                    highlights.push('Urban mid-rise convenience');
+                } else if (prop.propertyType === 'High-Rise') {
+                    highlights.push('High-rise skyline presence');
+                } else if (prop.propertyType === 'Townhome') {
+                    highlights.push('Townhome privacy and space');
+                }
+
+                // Age/Renovation highlights
+                if (prop.yearBuilt >= 2018) {
+                    highlights.push('Modern construction (post-2018)');
+                } else if (prop.yearRenovated && prop.yearRenovated >= 2020) {
+                    highlights.push(`Recently renovated (${prop.yearRenovated})`);
+                }
+
+                // Performance-based highlights
+                if (prop.occupancy >= 95) {
+                    highlights.push('Stable 95%+ occupancy performance');
+                }
+                if (prop.appreciation >= 15) {
+                    highlights.push(`Strong ${prop.appreciation}% value appreciation`);
+                }
+                if (prop.capRate >= 6) {
+                    highlights.push(`Attractive ${prop.capRate}% cap rate`);
+                }
+
+                // Return top 5 highlights as bullet points
+                return highlights.slice(0, 5).map(h =>
+                    `<li class="flex items-start"><span class="text-accentTeal mr-2">•</span>${h}</li>`
+                ).join('');
+            }
+
+            function showPropertyDetail(propId) {
+                const prop = propertiesData.find(p => p.id === propId);
+                if (!prop) return;
+
+                showView('view-property');
+
+                document.getElementById('propertyDetailContent').innerHTML = `
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-textMain">${prop.name}</h2>
+                    <p class="text-sm text-textMuted">${prop.address}, ${prop.city}, ${prop.state} ${prop.zip} • ${prop.submarket}</p>
+                </div>
+
+                <!-- Property KPIs -->
+                <div class="grid grid-cols-6 gap-3 mb-6">
+                    ${[
+                        { label: 'Current Value', value: `$${(prop.currentValue / 1e6).toFixed(1)}M`, change: `+${prop.appreciation}% since acq` },
+                        { label: 'Units', value: prop.units, change: `${prop.sqft.toLocaleString()} sq ft` },
+                        { label: 'Occupancy', value: `${prop.occupancy}%`, change: `Econ: ${prop.economicOccupancy}%` },
+                        { label: 'Avg Rent', value: `$${prop.avgRent.toLocaleString()}`, change: `Market: $${prop.marketRent.toLocaleString()}` },
+                        { label: 'Annual NOI', value: `$${(prop.noi / 1e6).toFixed(1)}M`, change: `${prop.noiMargin}% margin` },
+                        { label: 'Cap Rate', value: `${prop.capRate}%`, change: `Cash-on-Cash: ${prop.cashOnCash}%` },
+                    ].map(k => `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-value text-lg">${k.value}</div><div class="text-xs text-textMuted mt-1">${k.change}</div></div>`).join('')}
+                </div>
+
+                <!-- Property Details Grid (Collapsible) -->
+                <div class="glass-panel p-4 mb-6">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="togglePropertyDetails()">
+                        <h3 class="font-semibold text-sm text-textMain">Property Information & Investment Summary</h3>
+                        <svg id="propertyDetailsChevron" class="w-5 h-5 text-textMuted transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="propertyDetailsContent" class="hidden mt-4">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="p-3 border border-bgSoft/30 rounded-lg">
+                                <h4 class="font-medium text-xs text-textMuted mb-2 uppercase tracking-wider">Property Information</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    ${[
+                        ['Property Type', prop.propertyType],
+                        ['Class', prop.classType],
+                        ['Year Built', prop.yearBuilt],
+                        ['Year Renovated', prop.yearRenovated || 'N/A'],
+                        ['Avg Unit Size', `${prop.avgUnitSize} sq ft`],
+                        ['Submarket', prop.submarket],
+                    ].map(([l, v]) => `<div class="text-textMuted">${l}</div><div class="font-medium">${v}</div>`).join('')}
+                                </div>
+                            </div>
+                            <div class="p-3 border border-bgSoft/30 rounded-lg">
+                                <h4 class="font-medium text-xs text-textMuted mb-2 uppercase tracking-wider">Investment Summary</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    ${[
+                        ['Acquired', prop.acquired],
+                        ['Purchase Price', `$${(prop.purchasePrice / 1e6).toFixed(1)}M`],
+                        ['Price/Unit', `$${prop.pricePerUnit.toLocaleString()}`],
+                        ['Current Value', `$${(prop.currentValue / 1e6).toFixed(1)}M`],
+                        ['Value/Unit', `$${prop.valuePerUnit.toLocaleString()}`],
+                        ['LTV', `${prop.ltv}%`],
+                    ].map(([l, v]) => `<div class="text-textMuted">${l}</div><div class="font-medium">${v}</div>`).join('')}
+                                </div>
+                            </div>
+                            <div class="p-3 border border-bgSoft/30 rounded-lg">
+                                <h4 class="font-medium text-xs text-textMuted mb-2 uppercase tracking-wider">Property Highlights</h4>
+                                <ul class="text-xs space-y-1.5 text-textMain">
+                                    ${generatePropertyHighlights(prop)}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Annual Financial Summary (Collapsible) -->
+                <div class="glass-panel p-4 mb-6">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleAnnualSummary()">
+                        <h3 class="font-semibold text-sm text-textMain">Annual Financial Summary</h3>
+                        <svg id="annualSummaryChevron" class="w-5 h-5 text-textMuted transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="annualSummaryContent" class="hidden mt-4">
+                        <div class="grid grid-cols-4 gap-4 text-xs">
+                            <div>
+                                <div class="text-textMuted mb-2">Revenue</div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between"><span>Gross Potential Rent</span><span class="font-mono">$${(prop.gpr / 1e6).toFixed(2)}M</span></div>
+                                    <div class="flex justify-between text-accentRed"><span>Vacancy Loss</span><span class="font-mono">(${(Math.abs(prop.vacancyLoss) / 1e6).toFixed(2)}M)</span></div>
+                                    <div class="flex justify-between"><span>Other Income</span><span class="font-mono">$${(prop.otherIncome / 1e3).toFixed(0)}K</span></div>
+                                    <div class="flex justify-between font-semibold border-t pt-1 mt-1"><span>Total Revenue</span><span class="font-mono">$${(prop.totalRevenue / 1e6).toFixed(2)}M</span></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-textMuted mb-2">Expenses</div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-accentRed"><span>Operating Expenses</span><span class="font-mono">(${(prop.operatingExpenses / 1e6).toFixed(2)}M)</span></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-textMuted mb-2">Cash Flow</div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between font-semibold text-accentTeal"><span>NOI</span><span class="font-mono">$${(prop.noi / 1e6).toFixed(2)}M</span></div>
+                                    <div class="flex justify-between text-accentRed"><span>Debt Service</span><span class="font-mono">(${(prop.debtService / 1e6).toFixed(2)}M)</span></div>
+                                    <div class="flex justify-between font-semibold border-t pt-1 mt-1"><span>Cash Flow</span><span class="font-mono">$${(prop.cashFlow / 1e6).toFixed(2)}M</span></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-textMuted mb-2">Key Metrics</div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between"><span>Loss to Lease</span><span class="font-mono">${prop.lossToLease}%</span></div>
+                                    <div class="flex justify-between"><span>Concessions</span><span class="font-mono">${prop.concessions}%</span></div>
+                                    <div class="flex justify-between ${prop.badDebt > 1 ? 'text-accentRed' : ''}"><span>Bad Debt</span><span class="font-mono">${prop.badDebt}%</span></div>
+                                    <div class="flex justify-between"><span>Turnover Rate</span><span class="font-mono">${prop.turnoverRate}%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Performance T-12 (Collapsible) -->
+                <div class="glass-panel p-4 mb-6">
+                    <div class="flex items-center justify-between cursor-pointer" onclick="toggleFinancialDetails()">
+                        <h3 class="font-semibold text-sm text-textMain">Financial Performance (T-12)</h3>
+                        <svg id="financialDetailsChevron" class="w-5 h-5 text-textMuted transition-transform duration-200 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="financialDetailsContent" class="mt-4">
+                        <!-- NOI Trend Chart -->
+                        <div class="mb-4" style="height: 200px;">
+                            <canvas id="propertyDetailNoiChart"></canvas>
+                        </div>
+                        <!-- Summary Comparison -->
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="p-3 bg-bgSoft rounded-lg text-center">
+                                <div class="text-xs text-textMuted">T-12 NOI</div>
+                                <div class="text-lg font-bold text-accentTeal" id="propT12Noi">-</div>
+                                <div class="text-xs text-textMuted" id="propT12NoiVsBudget">vs Budget</div>
+                            </div>
+                            <div class="p-3 bg-bgSoft rounded-lg text-center">
+                                <div class="text-xs text-textMuted">Budget NOI</div>
+                                <div class="text-lg font-bold text-textMain" id="propBudgetNoi">-</div>
+                                <div class="text-xs text-textMuted">FY 2025-26</div>
+                            </div>
+                            <div class="p-3 bg-bgSoft rounded-lg text-center">
+                                <div class="text-xs text-textMuted">Prior Year NOI</div>
+                                <div class="text-lg font-bold text-textMain" id="propPriorNoi">-</div>
+                                <div class="text-xs" id="propNoiGrowth">YoY Growth</div>
+                            </div>
+                        </div>
+                        <!-- Detailed Monthly Table -->
+                        <div class="overflow-x-auto">
+                            <table class="data-table text-xs" id="propertyFinancialTable">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="selectProperty('all')" class="text-xs text-accentBlue hover:underline">← Back to All Properties</button>
+            `;
+
+                // Load and render property financials
+                loadPropertyFinancials(prop.id);
+            }
+
+            // ============================================
+            // NAVIGATION
+            // ============================================
+            function setMainTab(tab) {
+                currentMainTab = tab;
+                document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+                document.getElementById(`tab-${tab}`).classList.add('active');
+                document.getElementById('subtabs-asset').classList.toggle('hidden', tab !== 'asset');
+                document.getElementById('subtabs-portfolio').classList.toggle('hidden', tab !== 'portfolio');
+
+                // Toggle property sidebar visibility (only for Asset Management)
+                const sidebar = document.getElementById('propertySidebar');
+                if (sidebar) {
+                    sidebar.classList.toggle('hidden', tab !== 'asset');
+                }
+
+                if (tab === 'asset') {
+                    showView('view-asset');
+                } else {
+                    showView('view-portfolio');
+                }
+            }
+
+            let rentalData = null;
+            let rentalTrendChart = null;
+            let currentRentalTrendTab = 'occupancy';
+
+            function setSubTab(tab) {
+                // Update tab styles
+                ['financial', 'rent-roll', 'receivables'].forEach(t => {
+                    const btn = document.getElementById(`subtab-${t}`);
+                    if (btn) {
+                        btn.className = t === tab ?
+                            'text-xs font-medium text-accentBlue' :
+                            'text-xs font-medium text-textMuted hover:text-textMain';
+                    }
+                });
+
+                // Show/hide subsections
+                const financialSection = document.getElementById('financial-subsection');
+                const rentRollSection = document.getElementById('rent-roll-subsection');
+                const receivablesSection = document.getElementById('receivables-subsection');
+                const summaryCards = document.getElementById('summaryCards');
+                const kpiHeader = document.getElementById('kpi-header');
+                const kpiTable = document.getElementById('kpi-table-wrapper');
+
+                // Hide all first
+                if (financialSection) financialSection.classList.add('hidden');
+                if (rentRollSection) rentRollSection.classList.add('hidden');
+                if (receivablesSection) receivablesSection.classList.add('hidden');
+
+                if (tab === 'rent-roll') {
+                    if (rentRollSection) rentRollSection.classList.remove('hidden');
+                    if (summaryCards) summaryCards.classList.add('hidden');
+                    if (kpiHeader) kpiHeader.classList.add('hidden');
+                    if (kpiTable) kpiTable.classList.add('hidden');
+                    loadRentalData();
+                } else if (tab === 'receivables') {
+                    if (receivablesSection) receivablesSection.classList.remove('hidden');
+                    if (summaryCards) summaryCards.classList.add('hidden');
+                    if (kpiHeader) kpiHeader.classList.add('hidden');
+                    if (kpiTable) kpiTable.classList.add('hidden');
+                    loadReceivablesData();
+                } else {
+                    if (financialSection) financialSection.classList.remove('hidden');
+                    if (summaryCards) summaryCards.classList.remove('hidden');
+                    if (kpiHeader) kpiHeader.classList.remove('hidden');
+                    if (kpiTable) kpiTable.classList.remove('hidden');
+                }
+            }
+
+            async function loadRentalData() {
+                if (!rentalData) {
+                    try {
+                        const res = await fetch('data/rental-summary.json');
+                        rentalData = await res.json();
+                    } catch (e) {
+                        console.error('Failed to load rental data:', e);
+                        return;
+                    }
+                }
+                renderRentalKpiCards();
+                renderRentalSummaryTable();
+                renderRentalTrendChart();
+            }
+
+            function renderRentalKpiCards() {
+                const container = document.getElementById('rentalKpiCards');
+                if (!container || !rentalData) return;
+
+                const s = rentalData.summary;
+                const cards = [
+                    { label: 'Total Units', value: s.totalUnits.toLocaleString(), change: `${rentalData.funds.length} Funds`, positive: false },
+                    { label: 'Current Occupancy', value: `${s.currentOccupancy}%`, change: '+0.3pp MoM', positive: true },
+                    { label: 'Rent Growth (T-12)', value: `${s.rentGrowthInclReno}%`, change: 'Incl. Reno', positive: true },
+                    { label: 'Renewals (T-1)', value: s.renewals.toLocaleString(), change: `${s.renewalRate}% Rate`, positive: true },
+                    { label: 'Turnovers (T-1)', value: s.turnovers.toLocaleString(), change: `${s.turnoverRate}% Rate`, positive: false },
+                    { label: 'Renovations', value: s.renovations.toLocaleString(), change: `${s.renoRate}% Premium`, positive: true }
+                ];
+
+                container.innerHTML = cards.map(c => `
+                <div class="kpi-card">
+                    <div class="kpi-label">${c.label}</div>
+                    <div class="kpi-value text-textMain">${c.value}</div>
+                    <div class="text-xs ${c.positive ? 'text-accentTeal' : 'text-textMuted'} mt-1">${c.change}</div>
+                </div>
+            `).join('');
+            }
+
+            function renderRentalSummaryTable() {
+                const table = document.getElementById('rentalSummaryTable');
+                if (!table || !rentalData) return;
+
+                table.querySelector('thead').innerHTML = `
+                <tr>
+                    <th rowspan="2" style="vertical-align: middle;">FUND</th>
+                    <th rowspan="2" style="vertical-align: middle;">Unit Count</th>
+                    <th colspan="3" style="text-align: center; border-bottom: 1px solid var(--border-subtle);">OCCUPANCY %</th>
+                    <th colspan="2" style="text-align: center; border-bottom: 1px solid var(--border-subtle);">RENT GROWTH % (T-12)</th>
+                    <th colspan="5" style="text-align: center; border-bottom: 1px solid var(--border-subtle);">Unit Status (T-1)</th>
+                </tr>
+                <tr>
+                    <th>Current</th>
+                    <th>Projected</th>
+                    <th>Excl.Reno</th>
+                    <th>Incl.Reno</th>
+                    <th>Excl.Reno</th>
+                    <th>Renewal(#)</th>
+                    <th>Renewal(%)</th>
+                    <th>Turnover(#)</th>
+                    <th>Turnover(%)</th>
+                    <th>Reno(#)</th>
+                </tr>
+            `;
+
+                const s = rentalData.summary;
+                let bodyHtml = `
+                <tr class="total-row">
+                    <td>Total</td>
+                    <td>${s.totalUnits.toLocaleString()}</td>
+                    <td>${s.currentOccupancy}%</td>
+                    <td>${s.projectedOccupancy}%</td>
+                    <td>${s.exclRenoOccupancy}%</td>
+                    <td>${s.rentGrowthInclReno}%</td>
+                    <td>${s.rentGrowthExclReno}%</td>
+                    <td>${s.renewals}</td>
+                    <td>${s.renewalRate}%</td>
+                    <td>${s.turnovers}</td>
+                    <td>${s.turnoverRate}%</td>
+                    <td>${s.renovations}</td>
+                </tr>
+            `;
+
+                rentalData.funds.forEach(fund => {
+                    const rentGrowthInclClass = fund.rentGrowthInclReno !== null && fund.rentGrowthInclReno < 0 ? 'negative' : '';
+                    const rentGrowthExclClass = fund.rentGrowthExclReno !== null && fund.rentGrowthExclReno < 0 ? 'negative' : '';
+                    bodyHtml += `
+                    <tr>
+                        <td class="indent">> ${fund.name}</td>
+                        <td>${fund.units.toLocaleString()}</td>
+                        <td>${fund.currentOccupancy}%</td>
+                        <td>${fund.projectedOccupancy}%</td>
+                        <td>${fund.exclRenoOccupancy}%</td>
+                        <td class="${rentGrowthInclClass}">${fund.rentGrowthInclReno !== null ? fund.rentGrowthInclReno + '%' : '-'}</td>
+                        <td class="${rentGrowthExclClass}">${fund.rentGrowthExclReno !== null ? fund.rentGrowthExclReno + '%' : '-'}</td>
+                        <td>${fund.renewals}</td>
+                        <td>${fund.renewalRate}%</td>
+                        <td>${fund.turnovers}</td>
+                        <td>${fund.turnoverRate !== null ? fund.turnoverRate + '%' : '-'}</td>
+                        <td>${fund.renovations}</td>
+                    </tr>
+                `;
+                });
+
+                table.querySelector('tbody').innerHTML = bodyHtml;
+            }
+
+            function setRentalTrendTab(tab) {
+                currentRentalTrendTab = tab;
+                ['occupancy', 'rentGrowth', 'unitStatus'].forEach(t => {
+                    const btn = document.getElementById(`trend-tab-${t}`);
+                    if (btn) {
+                        btn.className = t === tab ?
+                            'text-xs px-3 py-1 rounded font-medium bg-slate-800 text-white' :
+                            'text-xs px-3 py-1 rounded font-medium text-textMuted hover:bg-bgSoft';
+                    }
+                });
+                renderRentalTrendChart();
+            }
+
+            function renderRentalTrendChart() {
+                if (!rentalData) return;
+                const ctx = document.getElementById('rentalTrendChart');
+                if (!ctx) return;
+
+                if (rentalTrendChart) {
+                    rentalTrendChart.destroy();
+                }
+
+                const trend = rentalData.trend;
+                let dataTotal, dataFundI, dataFundII, label, yConfig;
+
+                // Colors for each series
+                const colorTotal = '#1e3a5f';  // Dark blue for total
+                const colorFundI = '#3b82f6';  // Blue for Fund I
+                const colorFundII = '#14b8a6'; // Teal for Fund II
+
+                if (currentRentalTrendTab === 'occupancy') {
+                    dataTotal = trend.total?.occupancy || trend.occupancy;
+                    dataFundI = trend.fundI?.occupancy;
+                    dataFundII = trend.fundII?.occupancy;
+                    label = 'Occupancy Rate';
+                    yConfig = { min: 90, max: 100, ticks: { callback: v => v + '%' } };
+                } else if (currentRentalTrendTab === 'rentGrowth') {
+                    dataTotal = trend.total?.rentGrowth || trend.rentGrowth;
+                    dataFundI = trend.fundI?.rentGrowth;
+                    dataFundII = trend.fundII?.rentGrowth;
+                    label = 'Rent Growth';
+                    yConfig = { min: 0, max: 10, ticks: { callback: v => v + '%' } };
+                } else {
+                    dataTotal = trend.total?.unitStatus || trend.unitStatus;
+                    dataFundI = trend.fundI?.unitStatus;
+                    dataFundII = trend.fundII?.unitStatus;
+                    label = 'Unit Status Rate';
+                    yConfig = { min: 90, max: 100, ticks: { callback: v => v + '%' } };
+                }
+
+                const datasets = [];
+
+                // Add Fund I line
+                if (dataFundI) {
+                    datasets.push({
+                        label: 'Fund I',
+                        data: dataFundI,
+                        borderColor: colorFundI,
+                        backgroundColor: colorFundI + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointBackgroundColor: colorFundI,
+                        borderWidth: 2
+                    });
+                }
+
+                // Add Fund II line
+                if (dataFundII) {
+                    datasets.push({
+                        label: 'Fund II',
+                        data: dataFundII,
+                        borderColor: colorFundII,
+                        backgroundColor: colorFundII + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointBackgroundColor: colorFundII,
+                        borderWidth: 2
+                    });
+                }
+
+                // Add Total line (dashed, on top)
+                datasets.push({
+                    label: 'Portfolio Total',
+                    data: dataTotal,
+                    borderColor: colorTotal,
+                    backgroundColor: colorTotal + '10',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: colorTotal,
+                    borderWidth: 2.5,
+                    borderDash: [5, 5]
+                });
+
+                rentalTrendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: trend.months,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                align: 'end',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    boxWidth: 6,
+                                    padding: 12,
+                                    font: { size: 11 }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: yConfig
+                        }
+                    }
+                });
+            }
+
+            function showView(viewId) {
+                document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+                document.getElementById(viewId).classList.add('active');
+            }
+
+            // ============================================
+            // UTILITIES
+            // ============================================
+            function formatValue(val, format) {
+                if (format === 'percent') return typeof val === 'number' ? `${val}%` : val;
+                if (format === 'currency') return `$${val.toLocaleString()}`;
+                return val;
+            }
+
+            function formatMoney(val) {
+                if (val === 0) return '$0';
+                return val < 0 ? `(${Math.abs(val).toLocaleString()})` : val.toLocaleString();
+            }
+
+            // ============================================
+            // AGED RECEIVABLES
+            // ============================================
+            let receivablesData = null;
+            let arOverTimeChart = null;
+            let ar31PlusChart = null;
+            let arBuckets = { '0to30': true, '31to60': true, '61to90': true, '91plus': true };
+
+            async function loadReceivablesData() {
+                if (!receivablesData) {
+                    try {
+                        const res = await fetch('data/receivables.json');
+                        receivablesData = await res.json();
+                    } catch (e) {
+                        console.error('Failed to load receivables data:', e);
+                        return;
+                    }
+                }
+                renderReceivablesKpiCards();
+                renderArOverTimeChart();
+                renderAr31PlusChart();
+                renderReceivablesFundTable();
+            }
+
+            function renderReceivablesKpiCards() {
+                const container = document.getElementById('receivablesKpiCards');
+                if (!container || !receivablesData) return;
+
+                const s = receivablesData.summary;
+                const cards = [
+                    { label: 'Total AR', value: `$${(s.totalAR / 1000).toFixed(0)}K`, change: '2 Funds • 24 Properties', positive: false },
+                    { label: '0-30 Days', value: `$${(s.total0to30 / 1000).toFixed(0)}K`, change: `${((s.total0to30 / s.totalAR) * 100).toFixed(0)}% of Total`, positive: true },
+                    { label: '31-60 Days', value: `$${(s.total31to60 / 1000).toFixed(0)}K`, change: `${((s.total31to60 / s.totalAR) * 100).toFixed(0)}% of Total`, positive: false },
+                    { label: '61-90 Days', value: `$${(s.total61to90 / 1000).toFixed(0)}K`, change: `${((s.total61to90 / s.totalAR) * 100).toFixed(0)}% of Total`, positive: false },
+                    { label: '91+ Days', value: `$${(s.total91plus / 1000).toFixed(0)}K`, change: `${((s.total91plus / s.totalAR) * 100).toFixed(0)}% of Total`, positive: false },
+                    { label: 'Collection Rate', value: `${s.collectionRate}%`, change: 'Portfolio Avg', positive: true }
+                ];
+
+                container.innerHTML = cards.map(c => `
+                <div class="kpi-card">
+                    <div class="kpi-label">${c.label}</div>
+                    <div class="kpi-value text-textMain">${c.value}</div>
+                    <div class="text-xs ${c.positive ? 'text-accentTeal' : 'text-textMuted'} mt-1">${c.change}</div>
+                </div>
+            `).join('');
+            }
+
+            function toggleArBucket(bucket) {
+                arBuckets[bucket] = !arBuckets[bucket];
+                const btn = document.getElementById(`ar-btn-${bucket}`);
+                if (btn) {
+                    btn.style.opacity = arBuckets[bucket] ? '1' : '0.4';
+                }
+                renderArOverTimeChart();
+            }
+
+            function renderArOverTimeChart() {
+                const ctx = document.getElementById('arOverTimeChart')?.getContext('2d');
+                if (!ctx || !receivablesData) return;
+
+                if (arOverTimeChart) arOverTimeChart.destroy();
+
+                const datasets = [];
+                const colors = {
+                    '0to30': { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' },
+                    '31to60': { bg: 'rgba(6, 182, 212, 0.8)', border: 'rgb(6, 182, 212)' },
+                    '61to90': { bg: 'rgba(249, 115, 22, 0.8)', border: 'rgb(249, 115, 22)' },
+                    '91plus': { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgb(139, 92, 246)' }
+                };
+
+                const data = receivablesData.t12Trend;
+
+                if (arBuckets['0to30']) datasets.push({ label: '0-30 Days', data: data.aging0to30, backgroundColor: colors['0to30'].bg, borderColor: colors['0to30'].border, borderWidth: 1 });
+                if (arBuckets['31to60']) datasets.push({ label: '31-60 Days', data: data.aging31to60, backgroundColor: colors['31to60'].bg, borderColor: colors['31to60'].border, borderWidth: 1 });
+                if (arBuckets['61to90']) datasets.push({ label: '61-90 Days', data: data.aging61to90, backgroundColor: colors['61to90'].bg, borderColor: colors['61to90'].border, borderWidth: 1 });
+                if (arBuckets['91plus']) datasets.push({ label: '91+ Days', data: data.aging91plus, backgroundColor: colors['91plus'].bg, borderColor: colors['91plus'].border, borderWidth: 1 });
+
+                arOverTimeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: data.months, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { stacked: true, grid: { display: false } },
+                            y: { stacked: true, ticks: { callback: v => '$' + (v / 1000) + 'K' } }
+                        }
+                    }
+                });
+            }
+
+            function renderAr31PlusChart() {
+                const ctx = document.getElementById('ar31PlusChart')?.getContext('2d');
+                if (!ctx || !receivablesData) return;
+
+                if (ar31PlusChart) ar31PlusChart.destroy();
+
+                // Calculate 31+ days total from t12Trend
+                const trend = receivablesData.t12Trend;
+                const data = {
+                    months: trend.months,
+                    total: trend.aging31to60.map((v, i) => v + trend.aging61to90[i] + trend.aging91plus[i])
+                };
+
+                ar31PlusChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.months,
+                        datasets: [{
+                            label: '31+ Days',
+                            data: data.total,
+                            fill: true,
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: 'rgb(139, 92, 246)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { callback: v => '$' + (v / 1000) + 'K' } }
+                        }
+                    }
+                });
+            }
+
+            function renderReceivablesFundTable() {
+                const table = document.getElementById('receivablesFundTable');
+                if (!table || !receivablesData) return;
+
+                table.querySelector('thead').innerHTML = `
+                <tr>
+                    <th>Fund</th>
+                    <th>Properties</th>
+                    <th>0-30 Days</th>
+                    <th>31-60 Days</th>
+                    <th>61-90 Days</th>
+                    <th>91+ Days</th>
+                    <th>Total AR</th>
+                    <th>Collection Rate</th>
+                </tr>
+            `;
+
+                const s = receivablesData.summary;
+                let bodyHtml = `
+                <tr class="total-row">
+                    <td>Total Portfolio</td>
+                    <td>24</td>
+                    <td>$${s.total0to30.toLocaleString()}</td>
+                    <td>$${s.total31to60.toLocaleString()}</td>
+                    <td>$${s.total61to90.toLocaleString()}</td>
+                    <td>$${s.total91plus.toLocaleString()}</td>
+                    <td>$${s.totalAR.toLocaleString()}</td>
+                    <td class="text-accentTeal">${s.collectionRate}%</td>
+                </tr>
+            `;
+
+                receivablesData.funds.forEach(fund => {
+                    bodyHtml += `
+                    <tr>
+                        <td class="indent">> ${fund.fundName}</td>
+                        <td>${fund.properties}</td>
+                        <td>$${fund.aging0to30.toLocaleString()}</td>
+                        <td>$${fund.aging31to60.toLocaleString()}</td>
+                        <td>$${fund.aging61to90.toLocaleString()}</td>
+                        <td>$${fund.aging91plus.toLocaleString()}</td>
+                        <td>$${fund.totalAR.toLocaleString()}</td>
+                        <td class="${fund.collectionRate >= 96 ? 'text-accentTeal' : 'text-yellow-400'}">${fund.collectionRate}%</td>
+                    </tr>
+                `;
+                });
+
+                table.querySelector('tbody').innerHTML = bodyHtml;
+            }
+
+            function togglePropertyDetails() {
+                const content = document.getElementById('propertyDetailsContent');
+                const chevron = document.getElementById('propertyDetailsChevron');
+                if (content && chevron) {
+                    content.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                }
+            }
+
+            function toggleFinancialDetails() {
+                const content = document.getElementById('financialDetailsContent');
+                const chevron = document.getElementById('financialDetailsChevron');
+                if (content && chevron) {
+                    content.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                }
+            }
+
+            function toggleAnnualSummary() {
+                const content = document.getElementById('annualSummaryContent');
+                const chevron = document.getElementById('annualSummaryChevron');
+                if (content && chevron) {
+                    content.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                }
+            }
+
+            let propertyFinancialsData = null;
+            let propertyDetailNoiChartInstance = null;
+
+            async function loadPropertyFinancials(propId) {
+                try {
+                    if (!propertyFinancialsData) {
+                        const res = await fetch('data/property-financials.json');
+                        propertyFinancialsData = await res.json();
+                    }
+
+                    const fin = propertyFinancialsData[propId];
+                    if (!fin) {
+                        console.log('No financial data for property:', propId);
+                        return;
+                    }
+
+                    const t12 = fin.t12;
+                    const t12Noi = t12.noi.reduce((sum, v) => sum + v, 0);
+                    const budgetNoi = fin.budget.noi;
+                    const priorNoi = fin.priorYear.noi;
+                    const noiVsBudget = ((t12Noi - budgetNoi) / budgetNoi * 100).toFixed(1);
+                    const noiGrowth = ((t12Noi - priorNoi) / priorNoi * 100).toFixed(1);
+
+                    // Update summary cards
+                    document.getElementById('propT12Noi').textContent = `$${(t12Noi / 1e6).toFixed(2)}M`;
+                    document.getElementById('propT12NoiVsBudget').textContent = `${noiVsBudget > 0 ? '+' : ''}${noiVsBudget}% vs Budget`;
+                    document.getElementById('propT12NoiVsBudget').className = `text-xs ${noiVsBudget >= 0 ? 'text-accentTeal' : 'text-accentRed'}`;
+                    document.getElementById('propBudgetNoi').textContent = `$${(budgetNoi / 1e6).toFixed(2)}M`;
+                    document.getElementById('propPriorNoi').textContent = `$${(priorNoi / 1e6).toFixed(2)}M`;
+                    document.getElementById('propNoiGrowth').textContent = `${noiGrowth > 0 ? '+' : ''}${noiGrowth}% YoY`;
+                    document.getElementById('propNoiGrowth').className = `text-xs ${noiGrowth >= 0 ? 'text-accentTeal' : 'text-accentRed'}`;
+
+                    // Render NOI Chart
+                    renderPropertyDetailNoiChart(t12);
+
+                    // Render Financial Table
+                    renderPropertyFinancialTable(t12);
+
+                } catch (e) {
+                    console.error('Failed to load property financials:', e);
+                }
+            }
+
+            function renderPropertyDetailNoiChart(t12) {
+                const ctx = document.getElementById('propertyDetailNoiChart');
+                if (!ctx) return;
+
+                if (propertyDetailNoiChartInstance) propertyDetailNoiChartInstance.destroy();
+
+                propertyDetailNoiChartInstance = new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: t12.months,
+                        datasets: [
+                            {
+                                label: 'Revenue',
+                                data: t12.effectiveGrossIncome,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderRadius: 2
+                            },
+                            {
+                                label: 'Expenses',
+                                data: t12.totalOpex.map(v => Math.abs(v)),
+                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                borderRadius: 2
+                            },
+                            {
+                                label: 'NOI',
+                                data: t12.noi,
+                                type: 'line',
+                                borderColor: '#2dd4bf',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#2dd4bf',
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 10 }, color: '#94a3b8' } }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: { size: 9 },
+                                    callback: v => `$${(v / 1000).toFixed(0)}K`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderPropertyFinancialTable(t12) {
+                const table = document.getElementById('propertyFinancialTable');
+                if (!table) return;
+
+                const rows = [
+                    { label: 'Gross Potential Rent', key: 'gpr', positive: true },
+                    { label: 'Vacancy Loss', key: 'vacancyLoss', positive: false },
+                    { label: 'Other Income', key: 'otherIncome', positive: true },
+                    { label: 'Effective Gross Income', key: 'effectiveGrossIncome', positive: true, bold: true },
+                    { label: 'Payroll', key: 'payroll', positive: false },
+                    { label: 'Repairs & Maintenance', key: 'repairsMaintenance', positive: false },
+                    { label: 'Utilities', key: 'utilities', positive: false },
+                    { label: 'Insurance', key: 'insurance', positive: false },
+                    { label: 'Property Tax', key: 'propertyTax', positive: false },
+                    { label: 'Management', key: 'management', positive: false },
+                    { label: 'Other Expenses', key: 'other', positive: false },
+                    { label: 'Total Operating Expenses', key: 'totalOpex', positive: false, bold: true },
+                    { label: 'Net Operating Income', key: 'noi', positive: true, bold: true, highlight: true }
+                ];
+
+                const headerHtml = '<tr><th class="text-left">Line Item</th>' +
+                    t12.months.map(m => `<th class="text-right">${m}</th>`).join('') +
+                    '<th class="text-right font-bold">T-12 Total</th></tr>';
+
+                const bodyHtml = rows.map(row => {
+                    const values = t12[row.key];
+                    const total = values.reduce((sum, v) => sum + v, 0);
+                    const isNeg = !row.positive;
+
+                    return `<tr class="${row.highlight ? 'bg-accentTeal/10' : ''} ${row.bold ? 'font-semibold' : ''}">
+                    <td class="text-left">${row.label}</td>
+                    ${values.map(v => {
+                        const display = isNeg ? `(${Math.abs(v / 1000).toFixed(0)}K)` : `$${(v / 1000).toFixed(0)}K`;
+                        return `<td class="text-right font-mono ${isNeg ? 'text-accentRed' : ''}">${display}</td>`;
+                    }).join('')}
+                    <td class="text-right font-mono font-bold ${row.highlight ? 'text-accentTeal' : isNeg ? 'text-accentRed' : ''}">
+                        ${isNeg ? `(${Math.abs(total / 1e6).toFixed(2)}M)` : `$${(total / 1e6).toFixed(2)}M`}
+                    </td>
+                </tr>`;
+                }).join('');
+
+                table.querySelector('thead').innerHTML = headerHtml;
+                table.querySelector('tbody').innerHTML = bodyHtml;
+            }
+
+            function toggleLumina() {
+                const panel = document.getElementById('lumina-panel');
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) {
+                    panel.classList.add('flex');
+                    updateLuminaContext();
+                } else {
+                    panel.classList.remove('flex');
+                }
+            }
+
+            function updateLuminaContext() {
+                const contextEl = document.getElementById('lumina-context');
+                if (!contextEl) return;
+
+                let context = '';
+                const selectedProp = propertiesData?.find(p => p.id === selectedPropertyId);
+
+                // Get current sub-tab name
+                const subTabNames = {
+                    'financial': 'Financial Statement',
+                    'rent-roll': 'Rent Roll',
+                    'receivables': 'Aged Receivables',
+                    'properties': 'Properties',
+                    'yoyCharts': 'YoY Analytics',
+                    'returnCharts': 'Returns',
+                    'distributionCharts': 'Distribution'
+                };
+
+                if (currentMainTab === 'asset') {
+                    const subTab = document.querySelector('#subtabs-asset button.text-accentBlue')?.id?.replace('subtab-', '') || 'financial';
+                    const subTabName = subTabNames[subTab] || 'Financial Statement';
+                    if (selectedPropertyId !== 'all' && selectedProp) {
+                        context = `${selectedProp.name} → ${subTabName}`;
+                    } else {
+                        context = `Asset Management → ${subTabName}`;
+                    }
+                } else if (currentMainTab === 'portfolio') {
+                    const subTab = currentPortfolioSubTab || 'properties';
+                    const subTabName = subTabNames[subTab] || 'Properties';
+                    context = `Portfolio Management → ${subTabName}`;
+                }
+
+                contextEl.textContent = `Viewing: ${context}`;
+            }
+
+            function sendChat() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                if (!message) return;
+                const chatHistory = document.getElementById('chatHistory');
+                chatHistory.innerHTML += `<div class="flex gap-3 flex-row-reverse"><div class="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-xs text-slate-600 font-bold">U</div><div class="bg-slate-700 text-white p-3 rounded-xl rounded-tr-none shadow-sm max-w-[85%]"><p class="text-sm">${message}</p></div></div>`;
+
+                // Context-aware response based on current view
+                let contextResponse = '';
+                const selectedProp = propertiesData?.find(p => p.id === selectedPropertyId);
+
+                if (currentMainTab === 'asset') {
+                    if (selectedPropertyId !== 'all' && selectedProp) {
+                        contextResponse = `Looking at <b>${selectedProp.name}</b> in ${selectedProp.location}:<br><br>• Current occupancy is ${selectedProp.occupancy}% (Economic: ${selectedProp.economicOccupancy}%)<br>• Average rent of $${selectedProp.avgRent.toLocaleString()} vs market $${selectedProp.marketRent.toLocaleString()}<br>• NOI of $${(selectedProp.noi / 1e6).toFixed(1)}M with ${selectedProp.noiMargin}% margin<br>• Bad debt at ${selectedProp.badDebt}%<br><br>Would you like me to analyze trends or compare with other properties?`;
+                    } else {
+                        const totalUnits = propertiesData?.reduce((sum, p) => sum + p.units, 0) || 0;
+                        const avgOcc = propertiesData?.length ? (propertiesData.reduce((sum, p) => sum + p.occupancy, 0) / propertiesData.length).toFixed(1) : 0;
+                        contextResponse = `Analyzing your <b>portfolio of ${propertiesData?.length || 0} properties</b> (${totalUnits.toLocaleString()} units):<br><br>• Average occupancy: ${avgOcc}%<br>• Total 24 properties across Fund I and Fund II<br>• Select a specific property from the sidebar for detailed analysis.<br><br>What specific metrics would you like to explore?`;
+                    }
+                } else if (currentMainTab === 'portfolio') {
+                    contextResponse = `Looking at <b>Portfolio Management</b> view:<br><br>• 24 properties total across 2 funds<br>• Fund I: 12 properties<br>• Fund II: 12 properties<br><br>You can filter by fund using the buttons above the table. Would you like me to compare fund performance or analyze specific metrics?`;
+                }
+
+                setTimeout(() => {
+                    chatHistory.innerHTML += `<div class="flex gap-3"><div class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">LA</div><div class="bg-bgPanel border border-borderSubtle p-3 rounded-xl rounded-tl-none shadow-sm max-w-[85%]"><p class="text-sm text-textMain">${contextResponse || `Analyzing "${message}"... This is a demo. In production, I would query your portfolio data and provide detailed insights.`}</p></div></div>`;
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }, 500);
+                input.value = '';
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+
+            // ============================================
+            // INIT
+            // ============================================
+            document.addEventListener('DOMContentLoaded', loadData);
+        </script>
+</body>
+
+</html>

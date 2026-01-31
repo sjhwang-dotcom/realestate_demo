@@ -1,0 +1,353 @@
+{
+    "sources": [
+        {
+            "id": "rentmanager",
+            "name": "RentManager",
+            "type": "pms",
+            "icon": "🏠",
+            "description": "Property Management System - Rent rolls, lease data, tenant info",
+            "status": "connected",
+            "syncFrequency": "Every 15 minutes",
+            "lastSync": "2024-11-20T14:32:00Z",
+            "nextSync": "2024-11-20T14:47:00Z",
+            "properties": 47,
+            "records": 128450,
+            "tables": [
+                {
+                    "name": "tenants",
+                    "records": 12840,
+                    "status": "synced"
+                },
+                {
+                    "name": "leases",
+                    "records": 15680,
+                    "status": "synced"
+                },
+                {
+                    "name": "rent_rolls",
+                    "records": 48200,
+                    "status": "synced"
+                },
+                {
+                    "name": "payments",
+                    "records": 38420,
+                    "status": "synced"
+                },
+                {
+                    "name": "work_orders",
+                    "records": 13310,
+                    "status": "synced"
+                }
+            ],
+            "pipeline": {
+                "ingestion": {
+                    "status": "complete",
+                    "progress": 100,
+                    "records": 128450,
+                    "completedAt": "2024-11-20T12:15:00Z"
+                },
+                "cleanup": {
+                    "status": "complete",
+                    "progress": 100,
+                    "issues": 234,
+                    "resolved": 234,
+                    "completedAt": "2024-11-20T12:45:00Z"
+                },
+                "database": {
+                    "status": "complete",
+                    "progress": 100,
+                    "tables": 5,
+                    "indexes": 18,
+                    "completedAt": "2024-11-20T13:20:00Z"
+                },
+                "queryTest": {
+                    "status": "complete",
+                    "progress": 100,
+                    "queriesRun": 48,
+                    "passed": 48,
+                    "failed": 0,
+                    "completedAt": "2024-11-20T14:00:00Z"
+                }
+            }
+        },
+        {
+            "id": "yardi",
+            "name": "Yardi Voyager",
+            "type": "pms",
+            "icon": "📊",
+            "description": "Financial & Accounting - GL, AP/AR, budgeting, reporting",
+            "status": "connected",
+            "syncFrequency": "Every 30 minutes",
+            "lastSync": "2024-11-20T14:28:00Z",
+            "nextSync": "2024-11-20T14:58:00Z",
+            "properties": 47,
+            "records": 245890,
+            "tables": [
+                {
+                    "name": "general_ledger",
+                    "records": 89400,
+                    "status": "synced"
+                },
+                {
+                    "name": "accounts_payable",
+                    "records": 45200,
+                    "status": "synced"
+                },
+                {
+                    "name": "accounts_receivable",
+                    "records": 62800,
+                    "status": "synced"
+                },
+                {
+                    "name": "budgets",
+                    "records": 18490,
+                    "status": "synced"
+                },
+                {
+                    "name": "financial_reports",
+                    "records": 30000,
+                    "status": "synced"
+                }
+            ],
+            "pipeline": {
+                "ingestion": {
+                    "status": "complete",
+                    "progress": 100,
+                    "records": 245890,
+                    "completedAt": "2024-11-20T10:30:00Z"
+                },
+                "cleanup": {
+                    "status": "complete",
+                    "progress": 100,
+                    "issues": 892,
+                    "resolved": 892,
+                    "completedAt": "2024-11-20T11:45:00Z"
+                },
+                "database": {
+                    "status": "complete",
+                    "progress": 100,
+                    "tables": 5,
+                    "indexes": 24,
+                    "completedAt": "2024-11-20T12:30:00Z"
+                },
+                "queryTest": {
+                    "status": "complete",
+                    "progress": 100,
+                    "queriesRun": 62,
+                    "passed": 62,
+                    "failed": 0,
+                    "completedAt": "2024-11-20T13:15:00Z"
+                }
+            }
+        },
+        {
+            "id": "webdisk",
+            "name": "WebDisk Storage",
+            "type": "files",
+            "icon": "📁",
+            "description": "Cloud file storage - Excel reports, PDF documents, images",
+            "status": "syncing",
+            "syncFrequency": "Every 1 hour",
+            "lastSync": "2024-11-20T14:00:00Z",
+            "nextSync": "2024-11-20T15:00:00Z",
+            "files": 3842,
+            "totalSize": "28.4 GB",
+            "fileTypes": [
+                {
+                    "type": "Excel (.xlsx)",
+                    "count": 1245,
+                    "size": "4.2 GB",
+                    "status": "synced"
+                },
+                {
+                    "type": "PDF Documents",
+                    "count": 1892,
+                    "size": "18.6 GB",
+                    "status": "processing"
+                },
+                {
+                    "type": "Images",
+                    "count": 485,
+                    "size": "3.8 GB",
+                    "status": "synced"
+                },
+                {
+                    "type": "Other",
+                    "count": 220,
+                    "size": "1.8 GB",
+                    "status": "pending"
+                }
+            ],
+            "pipeline": {
+                "ingestion": {
+                    "status": "running",
+                    "progress": 78,
+                    "files": 3842,
+                    "processed": 2997,
+                    "completedAt": null
+                },
+                "cleanup": {
+                    "status": "running",
+                    "progress": 65,
+                    "issues": 156,
+                    "resolved": 101,
+                    "completedAt": null
+                },
+                "database": {
+                    "status": "running",
+                    "progress": 52,
+                    "tables": 12,
+                    "indexes": 8,
+                    "completedAt": null
+                },
+                "queryTest": {
+                    "status": "running",
+                    "progress": 35,
+                    "queriesRun": 18,
+                    "passed": 18,
+                    "failed": 0,
+                    "completedAt": null
+                }
+            }
+        },
+        {
+            "id": "email",
+            "name": "Email Integration",
+            "type": "email",
+            "icon": "✉️",
+            "description": "Investor communications, vendor contracts, broker reports",
+            "status": "syncing",
+            "syncFrequency": "Every 5 minutes",
+            "lastSync": "2024-11-20T14:50:00Z",
+            "nextSync": "2024-11-20T14:55:00Z",
+            "emails": 8945,
+            "attachments": 2340,
+            "categories": [
+                {
+                    "name": "Investor Updates",
+                    "count": 1240,
+                    "status": "synced"
+                },
+                {
+                    "name": "Broker Reports",
+                    "count": 892,
+                    "status": "synced"
+                },
+                {
+                    "name": "Vendor Contracts",
+                    "count": 1456,
+                    "status": "processing"
+                },
+                {
+                    "name": "Property Reports",
+                    "count": 2180,
+                    "status": "processing"
+                },
+                {
+                    "name": "Other",
+                    "count": 3177,
+                    "status": "pending"
+                }
+            ],
+            "pipeline": {
+                "ingestion": {
+                    "status": "running",
+                    "progress": 45,
+                    "records": 8945,
+                    "processed": 4025,
+                    "completedAt": null
+                },
+                "cleanup": {
+                    "status": "running",
+                    "progress": 32,
+                    "issues": 89,
+                    "resolved": 28,
+                    "completedAt": null
+                },
+                "database": {
+                    "status": "running",
+                    "progress": 18,
+                    "tables": 3,
+                    "indexes": 4,
+                    "completedAt": null
+                },
+                "queryTest": {
+                    "status": "running",
+                    "progress": 8,
+                    "queriesRun": 4,
+                    "passed": 4,
+                    "failed": 0,
+                    "completedAt": null
+                }
+            }
+        }
+    ],
+    "recentActivity": [
+        {
+            "time": "2:50 PM",
+            "source": "Email",
+            "action": "Processing investor letter attachment from Q3 quarterly report",
+            "detail": "File: Q3_Investor_Letter.pdf (2.4 MB) - Extracting key metrics and highlights",
+            "result": "In Progress - 65% complete"
+        },
+        {
+            "time": "2:48 PM",
+            "source": "WebDisk",
+            "action": "Extracted rent roll data from November 2024 spreadsheet",
+            "detail": "Found 312 units across 24 properties with occupancy rates and lease terms",
+            "result": "Success - 312 records imported"
+        },
+        {
+            "time": "2:45 PM",
+            "source": "WebDisk",
+            "action": "OCR completed on property deed document",
+            "detail": "Scanned deed for Oakmont Place - extracted legal description, parcel ID, and ownership details",
+            "result": "Success - Document indexed and searchable"
+        },
+        {
+            "time": "2:42 PM",
+            "source": "Yardi",
+            "action": "Query validation passed: Monthly NOI rollup calculation",
+            "detail": "Verified NOI totals match source system within 0.01% tolerance across all 24 properties",
+            "result": "Success - All 48 test queries passed"
+        },
+        {
+            "time": "2:38 PM",
+            "source": "RentManager",
+            "action": "Synced new payment records from property management system",
+            "detail": "Downloaded tenant payments received today from Sunset Gardens, Parkview Tower, and 5 other properties",
+            "result": "Success - 284 payment records added ($412,850 total)"
+        },
+        {
+            "time": "2:32 PM",
+            "source": "RentManager",
+            "action": "Full sync completed for all property management data",
+            "detail": "Updated tenant info, lease terms, work orders, and payment history across entire portfolio",
+            "result": "Success - 128,450 records synced in 4m 32s"
+        },
+        {
+            "time": "2:15 PM",
+            "source": "Yardi",
+            "action": "Created new database table for budget variance analysis",
+            "detail": "Built budget_vs_actual table linking GL accounts to budget line items for FY 2025-26",
+            "result": "Success - Table created with 18,490 rows"
+        },
+        {
+            "time": "2:02 PM",
+            "source": "Email",
+            "action": "Classified and filed incoming broker market reports",
+            "detail": "Processed 12 new emails with market research attachments from CBRE, JLL, and Cushman & Wakefield",
+            "result": "Success - 8 PDFs queued for extraction"
+        }
+    ],
+    "stats": {
+        "totalRecords": 385285,
+        "totalFiles": 3842,
+        "totalStorage": "28.4 GB",
+        "tablesCreated": 22,
+        "indexesBuilt": 42,
+        "queriesValidated": 110,
+        "dataQuality": 98.2,
+        "lastFullSync": "2024-11-20T14:32:00Z"
+    }
+}
